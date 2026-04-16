@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../firebase'
@@ -19,6 +19,59 @@ const COMPETITION_ROUTES = {
 export default function Register() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [viewMode, setViewMode] = useState('carousel')
+
+  const carouselRef = useRef(null)
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragScrollLeft = useRef(0)
+
+  // Auto-scroll via rAF; pauses while dragging
+  useEffect(() => {
+    if (viewMode !== 'carousel') return
+    let frame
+    function tick() {
+      const el = carouselRef.current
+      if (el && !isDragging.current) {
+        el.scrollLeft += 1
+        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft = 0
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [viewMode])
+
+  function onMouseDown(e) {
+    isDragging.current = true
+    dragStartX.current = e.pageX
+    dragScrollLeft.current = carouselRef.current.scrollLeft
+    carouselRef.current.classList.add('comp-carousel--dragging')
+  }
+
+  function onMouseMove(e) {
+    if (!isDragging.current) return
+    const walk = (e.pageX - dragStartX.current) * 1.5
+    const el = carouselRef.current
+    let next = dragScrollLeft.current - walk
+    const half = el.scrollWidth / 2
+    if (next < 0) next += half
+    if (next >= half) next -= half
+    el.scrollLeft = next
+  }
+
+  function onMouseUp() {
+    isDragging.current = false
+    carouselRef.current?.classList.remove('comp-carousel--dragging')
+  }
+
+  function onTouchStart() {
+    isDragging.current = true
+  }
+
+  function onTouchEnd() {
+    isDragging.current = false
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u))
@@ -31,109 +84,159 @@ export default function Register() {
   }
 
   return (
-    <div className="page-container">
-      <header className="register-header">
-        <div>
-          <p className="register-header__event">SIKAPTALA 2026</p>
-          <h1 className="register-header__title">Select a Competition</h1>
-          <p className="register-header__subtitle">
-            Signed in as <strong>{user?.email}</strong>
-          </p>
+    <div className="register-page">
+
+      {/* ── Topbar ── */}
+      <div className="comp-topbar">
+        <span className="register-topbar__brand">SIKAPTALA 2026 · UdD Internal Selection</span>
+        <div className="comp-topbar__user">
+          <span>{user?.email}</span>
+          <button className="btn btn--ghost" onClick={handleSignOut}>Sign out</button>
         </div>
-        <button className="btn btn--ghost" onClick={handleSignOut}>
-          Sign out
-        </button>
-      </header>
-
-      <div className="register-announcement">
-        <p>
-          De La Salle University – Dasmariñas (DLSU-D) is hosting <strong>SIKAPTALA 2026</strong>,
-          and Universidad de Dagupan is currently on the lookout for our most capable representatives
-          to carry our banner in the upcoming competition.
-        </p>
-        <p>
-          This portal serves as our official internal screening to determine who will be sent to
-          compete. Students who make it to the final roster will have all competition-related expenses{' '}
-          <strong>fully covered and subsidized</strong> by the university.
-        </p>
-        <p>
-          Please fill out the details as accurately as possible.{' '}
-          <strong>Let's prepare to showcase the excellence of Universidad de Dagupan!</strong>
-        </p>
-        <a
-          href="https://canva.link/7de8v2ub1i7749w"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn--guidelines"
-        >
-          View Official Guidelines ↗
-        </a>
       </div>
 
-      <h2 className="competitions-section-title">Competitions</h2>
-      <p className="competitions-intro">
-        Choose a competition below to view details and submit your registration.
-        You may register for multiple competitions individually.
-      </p>
+      {/* ── Hero banner ── */}
+      <div className="register-hero">
+        <div className="register-hero__inner">
+          <p className="register-hero__label">Universidad de Dagupan · SITE</p>
+          <h1 className="register-hero__title">
+            Represent UdD at<br />SIKAPTALA 2026
+          </h1>
+          <p className="register-hero__body">
+            DLSU-D is hosting <strong>SIKAPTALA 2026</strong>, and we are looking for Universidad de Dagupan's
+            finest to carry our banner. This portal is the official internal screening —
+            students who make the final roster will have all competition expenses{' '}
+            <strong>fully covered by the university.</strong>
+          </p>
+          <a
+            href="https://canva.link/7de8v2ub1i7749w"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn--guidelines"
+          >
+            View Official Guidelines ↗
+          </a>
+        </div>
+      </div>
 
-      <div className="competitions-listing">
-        {COMPETITIONS.map((comp) => {
-          const route = COMPETITION_ROUTES[comp.id]
-          return (
-            <div
-              key={comp.id}
-              className="comp-listing-card"
-              style={{ '--card-color': comp.color, '--card-color-dark': comp.colorDark }}
-            >
-              {comp.image && (
-                <img
-                  src={`${BASE}images/${comp.image}`}
-                  alt=""
-                  className="comp-listing-card__thumb"
-                  aria-hidden="true"
-                />
-              )}
-              <div className="comp-listing-card__accent" />
-              <div className="comp-listing-card__body">
-                <div className="comp-listing-card__header">
-                  <h3 className="comp-listing-card__name">{comp.name}</h3>
-                  {comp.registrationType === 'adviser' ? (
-                    <span className="badge badge--adviser">See adviser</span>
-                  ) : comp.registrationOpen ? (
-                    <span className="badge badge--open">Open</span>
-                  ) : (
-                    <span className="badge badge--soon">Coming soon</span>
-                  )}
-                </div>
-                <p className="comp-listing-card__desc">{comp.description}</p>
-                {comp.type && (
-                  <div className="comp-listing-card__meta">
-                    <span className="comp-listing-card__type">
-                      {comp.type === 'individual' ? 'Individual' : 'Team'}
-                    </span>
-                  </div>
-                )}
-                {comp.adviserNote && (
-                  <p className="comp-listing-card__adviser-note">{comp.adviserNote}</p>
-                )}
-              </div>
-              {!comp.adviserNote && (
-                <div className="comp-listing-card__action">
-                  {route ? (
-                    <Link to={route} className="btn btn--register" style={{ background: comp.color }}>
-                      Register →
-                    </Link>
-                  ) : (
-                    <span className="btn btn--register btn--register-disabled">
-                      Guidelines pending
-                    </span>
-                  )}
-                </div>
-              )}
+      {/* ── Section heading ── */}
+      <div className="register-body">
+        <div className="register-body__heading">
+          <div className="register-body__heading-row">
+            <div>
+              <h2 className="competitions-section-title">Competitions</h2>
+              <p className="competitions-intro">
+                Choose a competition below to view details and register.
+                You may register for multiple competitions individually.
+              </p>
             </div>
-          )
-        })}
+            <div className="view-toggle">
+              <button
+                className={`view-toggle__btn ${viewMode === 'carousel' ? 'view-toggle__btn--active' : ''}`}
+                onClick={() => setViewMode('carousel')}
+                title="Carousel view"
+              >
+                <i className="bi bi-collection" />
+              </button>
+              <button
+                className={`view-toggle__btn ${viewMode === 'grid' ? 'view-toggle__btn--active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+              >
+                <i className="bi bi-grid-3x3-gap-fill" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* ── Competition cards ── */}
+      {viewMode === 'carousel' ? (
+        <div
+          className="comp-carousel"
+          ref={carouselRef}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
+        >
+          <div className="comp-carousel__track">
+            {[...COMPETITIONS, ...COMPETITIONS].map((comp, i) => (
+              <CompCard key={`${comp.id}-${i}`} comp={comp} route={COMPETITION_ROUTES[comp.id]} base={BASE} />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="register-body">
+          <div className="competitions-grid-cards">
+            {COMPETITIONS.map((comp) => (
+              <CompCard key={comp.id} comp={comp} route={COMPETITION_ROUTES[comp.id]} base={BASE} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ paddingBottom: '5rem' }} />
+    </div>
+  )
+}
+
+function CompCard({ comp, route, base }) {
+  return (
+    <div
+      className="comp-card"
+      style={{ '--card-color': comp.color, '--card-color-dark': comp.colorDark }}
+    >
+      <div className="comp-card__cover">
+        {comp.image && (
+          <img
+            src={`${base}images/${comp.image}`}
+            alt=""
+            className="comp-card__cover-img"
+            aria-hidden="true"
+          />
+        )}
+        <div className="comp-card__cover-overlay" />
+        {comp.registrationType === 'adviser' ? (
+          <span className="badge badge--adviser comp-card__badge">See adviser</span>
+        ) : comp.registrationOpen ? (
+          <span className="badge badge--open comp-card__badge">Open</span>
+        ) : (
+          <span className="badge badge--soon comp-card__badge">Coming soon</span>
+        )}
+      </div>
+
+      <div className="comp-card__body">
+        <h3 className="comp-card__name">{comp.name}</h3>
+        <p className="comp-card__desc">{comp.description}</p>
+        {comp.type && (
+          <span className="comp-card__type">
+            {comp.type === 'individual'
+              ? 'Individual'
+              : `Team · ${comp.teamSize?.min}–${comp.teamSize?.max} members`}
+          </span>
+        )}
+        {comp.adviserNote && (
+          <p className="comp-card__adviser-note">{comp.adviserNote}</p>
+        )}
+      </div>
+
+      {!comp.adviserNote && (
+        <div className="comp-card__action">
+          {route ? (
+            <Link to={route} className="btn btn--register" style={{ background: comp.color }}>
+              Register →
+            </Link>
+          ) : (
+            <span className="btn btn--register btn--register-disabled">
+              Guidelines pending
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
