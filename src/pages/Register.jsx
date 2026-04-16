@@ -45,9 +45,35 @@ export default function Register() {
         </button>
       </header>
 
+      <div className="register-announcement">
+        <p>
+          De La Salle University – Dasmariñas (DLSU-D) is hosting <strong>SIKAPTALA 2026</strong>,
+          and Universidad de Dagupan is currently on the lookout for our most capable representatives
+          to carry our banner in the upcoming competition.
+        </p>
+        <p>
+          This portal serves as our official internal screening to determine who will be sent to
+          compete. Students who make it to the final roster will have all competition-related expenses{' '}
+          <strong>fully covered and subsidized</strong> by the university.
+        </p>
+        <p>
+          Please fill out the details as accurately as possible.{' '}
+          <strong>Let's prepare to showcase the excellence of Universidad de Dagupan!</strong>
+        </p>
+        <a
+          href="https://canva.link/7de8v2ub1i7749w"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn--guidelines"
+        >
+          View Official Guidelines ↗
+        </a>
+      </div>
+
+      <h2 className="competitions-section-title">Competitions</h2>
       <p className="competitions-intro">
         Choose a competition below to view details and submit your registration.
-        You can register for multiple competitions individually.
+        You may register for multiple competitions individually.
       </p>
 
       <div className="competitions-listing">

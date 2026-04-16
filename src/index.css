@@ -113,14 +113,112 @@ a { color: var(--color-primary); }
 }
 
 /* =========================================================
-   Login Page
+   Landing Page (Login)
    ========================================================= */
-.login-page {
+.landing-page {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  min-height: 100vh;
+}
+
+@media (max-width: 860px) {
+  .landing-page { grid-template-columns: 1fr; }
+}
+
+/* Left — hero / announcement */
+.landing-hero {
+  background: linear-gradient(160deg, #0d1020 0%, #111827 100%);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  padding: 3rem 2rem;
+}
+
+.landing-hero__inner {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.landing-hero__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.landing-hero__title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--color-text);
+}
+
+@media (max-width: 860px) {
+  .landing-hero__title { font-size: 1.9rem; }
+}
+
+.landing-hero__body {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.landing-hero__cta-box {
+  margin-top: 0.5rem;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.landing-hero__cta-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.landing-hero__cta-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.btn--guidelines {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.btn--guidelines:hover { background: var(--color-primary-hover); }
+
+.landing-hero__footer {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+  margin-top: 0.5rem;
+}
+
+/* Right — sign-in card */
+.landing-signin {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 2rem 1.5rem;
+  background: var(--color-bg);
 }
 
 .login-card {
@@ -129,7 +227,7 @@ a { color: var(--color-primary); }
   border-radius: var(--radius);
   padding: 2.5rem 2rem;
   width: 100%;
-  max-width: 420px;
+  max-width: 360px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
@@ -139,7 +237,7 @@ a { color: var(--color-primary); }
 .login-card__header { text-align: center; }
 
 .login-card__event-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -148,7 +246,7 @@ a { color: var(--color-primary); }
 }
 
 .login-card__title {
-  font-size: 1.7rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--color-text);
   line-height: 1.2;
@@ -158,12 +256,6 @@ a { color: var(--color-primary); }
 .login-card__subtitle {
   font-size: 0.875rem;
   color: var(--color-text-muted);
-}
-
-.login-card__instructions {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  text-align: center;
 }
 
 .login-card__buttons {
@@ -500,10 +592,33 @@ a { color: var(--color-primary); }
   margin-bottom: 0.25rem;
 }
 
-.competitions-intro {
+.register-announcement {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.register-announcement p {
   font-size: 0.9rem;
   color: var(--color-text-muted);
-  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+
+.competitions-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.competitions-intro {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.25rem;
 }
 
 .competitions-listing {
