@@ -1,20 +1,23 @@
 import { useState } from 'react'
-import { signInWithPopup } from 'firebase/auth'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
-import { auth, googleProvider } from '../firebase'
+import { auth } from '../firebase'
 
 const ALLOWED_DOMAINS = ['@udd.edu.ph', '@cdd.edu.ph']
 
 export default function Login() {
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(null) // 'udd' | 'cdd' | null
   const navigate = useNavigate()
 
-  async function handleGoogleSignIn() {
+  async function handleSignIn(hd) {
     setError(null)
-    setLoading(true)
+    setLoading(hd)
     try {
-      const result = await signInWithPopup(auth, googleProvider)
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({ hd })
+
+      const result = await signInWithPopup(auth, provider)
       const email = result.user.email
 
       const isAllowed = ALLOWED_DOMAINS.some((domain) => email.endsWith(domain))
@@ -33,7 +36,7 @@ export default function Login() {
         console.error(err)
       }
     } finally {
-      setLoading(false)
+      setLoading(null)
     }
   }
 
@@ -58,17 +61,28 @@ export default function Login() {
           </div>
         )}
 
-        <button
-          className="btn btn--google"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-        >
-          <GoogleIcon />
-          {loading ? 'Signing in…' : 'Sign in with Google'}
-        </button>
+        <div className="login-card__buttons">
+          <button
+            className="btn btn--google"
+            onClick={() => handleSignIn('udd.edu.ph')}
+            disabled={loading !== null}
+          >
+            <GoogleIcon />
+            {loading === 'udd.edu.ph' ? 'Signing in…' : 'Sign in with UDD'}
+          </button>
+
+          <button
+            className="btn btn--google"
+            onClick={() => handleSignIn('cdd.edu.ph')}
+            disabled={loading !== null}
+          >
+            <GoogleIcon />
+            {loading === 'cdd.edu.ph' ? 'Signing in…' : 'Sign in with CDD'}
+          </button>
+        </div>
 
         <p className="login-card__note">
-          Only <strong>@udd.edu.ph</strong> and <strong>@cdd.edu.ph</strong> accounts are accepted.
+          Use your <strong>@udd.edu.ph</strong> or <strong>@cdd.edu.ph</strong> account.
         </p>
       </div>
     </div>

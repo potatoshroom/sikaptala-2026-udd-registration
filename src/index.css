@@ -166,6 +166,12 @@ a { color: var(--color-primary); }
   text-align: center;
 }
 
+.login-card__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 .login-card__note {
   font-size: 0.8rem;
   color: var(--color-text-muted);

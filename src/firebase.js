@@ -17,7 +17,6 @@ export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const googleProvider = new GoogleAuthProvider()
 
-// Restrict Google sign-in to UDD and CDD institutional accounts.
-// This hint alone is not a security boundary — the domain check in
-// Login.jsx and Firestore Security Rules are the actual enforcement.
-googleProvider.setCustomParameters({ hd: 'udd.edu.ph' })
+// No `hd` hint set — the Google account picker will show all accounts.
+// The actual domain restriction (@udd.edu.ph / @cdd.edu.ph) is enforced
+// in Login.jsx after sign-in and by Firestore Security Rules.
