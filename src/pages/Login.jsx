@@ -25,7 +25,7 @@ export default function Login() {
       if (!isAllowed) {
         await auth.signOut()
         setError(
-          `Only UDD (@udd.edu.ph) or CDD (@cdd.edu.ph) accounts are allowed. You signed in with: ${email}`
+          `Only UdD (@udd.edu.ph) or CdD (@cdd.edu.ph) accounts are allowed. You signed in with: ${email}`
         )
         return
       }
@@ -48,7 +48,7 @@ export default function Login() {
         <div className="landing-hero__inner">
           <p className="landing-hero__label">SIKAPTALA 2026 · Internal Selection</p>
           <h1 className="landing-hero__title">
-            Represent UDD at<br />SIKAPTALA 2026
+            Represent UdD at<br />SIKAPTALA 2026
           </h1>
           <p className="landing-hero__body">
             De La Salle University – Dasmariñas (DLSU-D) is hosting{' '}
@@ -90,7 +90,7 @@ export default function Login() {
             <p className="login-card__event-label">SIKAPTALA 2026</p>
             <h2 className="login-card__title">Sign In to Apply</h2>
             <p className="login-card__subtitle">
-              Use your UDD or CDD institutional Google account.
+              Use your institutional Google account.
             </p>
           </div>
 
@@ -107,7 +107,7 @@ export default function Login() {
               disabled={loading !== null}
             >
               <GoogleIcon />
-              {loading === 'udd.edu.ph' ? 'Signing in…' : 'Sign in with UDD'}
+              {loading === 'udd.edu.ph' ? 'Signing in…' : 'Sign in with udd.edu.ph'}
             </button>
 
             <button
@@ -116,7 +116,7 @@ export default function Login() {
               disabled={loading !== null}
             >
               <GoogleIcon />
-              {loading === 'cdd.edu.ph' ? 'Signing in…' : 'Sign in with CDD'}
+              {loading === 'cdd.edu.ph' ? 'Signing in…' : 'Sign in with cdd.edu.ph'}
             </button>
           </div>
 
