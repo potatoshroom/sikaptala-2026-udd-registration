@@ -480,3 +480,625 @@ a { color: var(--color-primary); }
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
+
+.success-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* =========================================================
+   Register Page — Competition Listing
+   ========================================================= */
+.register-header__event {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.competitions-intro {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.competitions-listing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.comp-listing-card {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.comp-listing-card:hover {
+  border-color: var(--card-color);
+}
+
+.comp-listing-card__thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+@media (max-width: 500px) {
+  .comp-listing-card__thumb { display: none; }
+}
+
+.comp-listing-card__accent {
+  width: 5px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: var(--card-color);
+}
+
+.comp-listing-card__body {
+  padding: 1rem 1.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.comp-listing-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.comp-listing-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.comp-listing-card__desc {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.comp-listing-card__meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.comp-listing-card__type {
+  color: var(--card-color);
+  font-weight: 600;
+}
+
+.comp-listing-card__action {
+  padding: 1rem 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Badges */
+.badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge--open {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.badge--soon {
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+  color: var(--color-text-muted);
+}
+
+.badge--adviser {
+  background: color-mix(in srgb, var(--card-color) 12%, transparent);
+  color: var(--card-color);
+}
+
+.comp-listing-card__adviser-note {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.btn--register {
+  color: #fff;
+  font-size: 0.875rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn--register-disabled {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  cursor: default;
+  font-size: 0.8rem;
+}
+
+/* =========================================================
+   Competition Page Layout
+   ========================================================= */
+.comp-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.comp-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.comp-topbar__back {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.comp-topbar__back:hover { color: var(--color-text); }
+
+.comp-topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.comp-banner {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--comp-color) 18%, var(--color-surface)) 0%,
+    var(--color-surface) 100%
+  );
+  border-bottom: 3px solid var(--comp-color);
+  padding: 2rem 1.5rem;
+  overflow: hidden;
+}
+
+.comp-banner__cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.12;
+  pointer-events: none;
+  user-select: none;
+}
+
+.comp-banner__inner {
+  position: relative; /* sit above the cover image */
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.comp-banner__event {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--comp-color);
+  margin-bottom: 0.4rem;
+}
+
+.comp-banner__title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.comp-banner__meta {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.comp-banner__badge {
+  background: color-mix(in srgb, var(--comp-color) 15%, transparent);
+  color: var(--comp-color);
+  border: 1px solid color-mix(in srgb, var(--comp-color) 35%, transparent);
+  padding: 0.2rem 0.7rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.comp-body {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+  width: 100%;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .comp-body {
+    grid-template-columns: 1fr;
+  }
+  .comp-banner__title {
+    font-size: 1.5rem;
+  }
+}
+
+.comp-info {
+  /* left column — topics, rules, etc. */
+}
+
+.comp-form-col {
+  /* right column — registration form */
+  position: sticky;
+  top: 1rem;
+}
+
+/* =========================================================
+   Language Badges (Skills competition)
+   ========================================================= */
+.comp-languages {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.comp-language-badge {
+  border: 2px solid;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.comp-languages__note {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  width: 100%;
+}
+
+/* =========================================================
+   Theme Callout (Web Design + any competition with an announced theme)
+   ========================================================= */
+.theme-callout {
+  background: color-mix(in srgb, var(--callout-color) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--callout-color) 35%, transparent);
+  border-left: 4px solid var(--callout-color);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.theme-callout__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--callout-color);
+  margin-bottom: 0.4rem;
+}
+
+.theme-callout__text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* =========================================================
+   Topics List
+   ========================================================= */
+.topics-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.topics-list__heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.topics-list__note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.1rem;
+}
+
+.topics-list__items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.topics-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.topics-list__bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.45em;
+}
+
+/* =========================================================
+   Exclusivity Warning (Game Jam / Hackathon)
+   ========================================================= */
+.exclusivity-warning {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: color-mix(in srgb, #F59E0B 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, #F59E0B 40%, transparent);
+  border-left: 4px solid #F59E0B;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.exclusivity-warning__icon {
+  font-size: 1rem;
+  color: #F59E0B;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.exclusivity-warning__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #F59E0B;
+  margin-bottom: 0.3rem;
+}
+
+.exclusivity-warning__body {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* =========================================================
+   Eligibility Note
+   ========================================================= */
+.eligibility-note {
+  background: color-mix(in srgb, var(--note-color) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--note-color) 30%, transparent);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.eligibility-note__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--note-color);
+}
+
+.eligibility-note__text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.eligibility-note__team-size {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-top: 0.25rem;
+}
+
+/* =========================================================
+   Individual Registration Form (comp pages)
+   ========================================================= */
+.reg-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.reg-form__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.reg-form__subtitle {
+  font-size: 0.83rem;
+  color: var(--color-text-muted);
+  margin-top: -0.75rem;
+}
+
+.form-field--full {
+  grid-column: 1 / -1;
+}
+
+.reg-form-loading {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  padding: 2rem;
+  text-align: center;
+}
+
+.reg-already {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.reg-already__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.reg-already__title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.reg-already__body {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* =========================================================
+   Team Member Blocks
+   ========================================================= */
+.team-member-block {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.team-member-block--leader {
+  border-color: color-mix(in srgb, var(--member-color) 40%, transparent);
+  background: color-mix(in srgb, var(--member-color) 5%, var(--color-bg));
+}
+
+.team-member-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.team-member-block__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--member-color, var(--color-text-muted));
+}
+
+.team-member-block--leader .team-member-block__label {
+  color: var(--member-color);
+}
+
+.btn-remove-member {
+  background: none;
+  border: none;
+  color: var(--color-error-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.btn-remove-member:hover {
+  background: var(--color-error-bg);
+}
+
+.btn-add-member {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem;
+  border: 2px dashed color-mix(in srgb, var(--member-color) 40%, var(--color-border));
+  border-radius: var(--radius);
+  background: none;
+  color: var(--member-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-add-member:hover {
+  background: color-mix(in srgb, var(--member-color) 8%, transparent);
+  border-color: var(--member-color);
+}
+
+.btn-add-member__count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+/* Select input (shared) */
+.form-field select {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  transition: border-color 0.15s;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+}
+.form-field select:focus {
+  border-color: var(--color-primary);
+}
+.form-field select option {
+  background: var(--color-surface);
+}

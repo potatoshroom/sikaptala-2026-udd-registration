@@ -1,0 +1,35 @@
+import { useState } from 'react'
+import { getCompetition } from '../../data/competitions'
+import CompetitionLayout from '../../components/competition/CompetitionLayout'
+import TeamRegistrationForm from '../../components/competition/TeamRegistrationForm'
+import EligibilityInfo from '../../components/competition/EligibilityInfo'
+
+const competition = getCompetition('hackathon')
+
+export default function Hackathon() {
+  const [user, setUser] = useState(null)
+
+  return (
+    <CompetitionLayout
+      competition={competition}
+      user={user}
+      infoChildren={
+        <>
+          <div className="theme-callout" style={{ '--callout-color': competition.color }}>
+            <p className="theme-callout__label">Theme</p>
+            <p className="theme-callout__text">{competition.themeNote}</p>
+          </div>
+
+          <div className="theme-callout" style={{ '--callout-color': competition.color }}>
+            <p className="theme-callout__label">Selection Process</p>
+            <p className="theme-callout__text">{competition.processNote}</p>
+          </div>
+
+          <EligibilityInfo competition={competition} />
+        </>
+      }
+    >
+      <TeamRegistrationForm competition={competition} onUserLoad={setUser} />
+    </CompetitionLayout>
+  )
+}

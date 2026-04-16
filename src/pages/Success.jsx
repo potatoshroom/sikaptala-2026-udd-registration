@@ -1,9 +1,11 @@
 import { signOut } from 'firebase/auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { auth } from '../firebase'
 
 export default function Success() {
   const navigate = useNavigate()
+  const { state } = useLocation()
+  const competitionName = state?.competitionName ?? 'SIKAPTALA 2026'
 
   async function handleSignOut() {
     await signOut(auth)
@@ -16,7 +18,7 @@ export default function Success() {
         <div className="success-card__icon" aria-hidden="true">✓</div>
         <h1 className="success-card__title">Registration Submitted!</h1>
         <p className="success-card__body">
-          Thank you for registering for <strong>SIKAPTALA 2026</strong>. Your application
+          Thank you for registering for <strong>{competitionName}</strong>. Your application
           has been received by the UDD School of IT Education selection committee.
         </p>
         <p className="success-card__body">
@@ -26,9 +28,14 @@ export default function Success() {
         <p className="success-card__note">
           Hosted by <strong>DLSU-D</strong> · Represented by <strong>Universidad de Dagupan</strong>
         </p>
-        <button className="btn btn--secondary" onClick={handleSignOut}>
-          Sign out
-        </button>
+        <div className="success-card__actions">
+          <Link to="/register" className="btn btn--secondary">
+            Back to Competitions
+          </Link>
+          <button className="btn btn--ghost" onClick={handleSignOut}>
+            Sign out
+          </button>
+        </div>
       </div>
     </div>
   )

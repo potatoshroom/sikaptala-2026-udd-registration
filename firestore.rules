@@ -3,14 +3,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /registrations/{uid} {
-      // Only authenticated UDD/CDD students can create a registration.
-      // The document ID must equal the submitter's UID (enforced by the app, verified here).
-      // No client reads, updates, or deletes — admin uses Firebase Console only.
+    // Path: registrations/{competitionId}/entries/{uid}
+    // The document ID is the submitter's Firebase UID.
+    // Individual competitions: one entry per student.
+    // Team competitions: one entry per team leader (leader submits for the whole team).
+    match /registrations/{competitionId}/entries/{uid} {
       allow create: if isAllowedDomain()
                     && request.auth.uid == uid
-                    && isValidRegistration(request.resource.data);
-      allow read, update, delete: if false;
+                    && isValidEntry(request.resource.data, competitionId)
+                    && !isExclusivityViolation(competitionId, uid);
+
+      // Allow the submitter to read their own entry (for the "already registered" check).
+      allow read: if request.auth != null
+                  && request.auth.uid == uid
+                  && isAllowedDomain();
+
+      allow update, delete: if false;
     }
 
   }
@@ -21,14 +29,40 @@ service cloud.firestore {
           || request.auth.token.email.matches('.*@cdd\\.edu\\.ph'));
   }
 
-  function isValidRegistration(data) {
-    return data.keys().hasAll(['uid', 'name', 'studentId', 'yearSection', 'email', 'competitions', 'submittedAt'])
+  // Prevents the same person from leading a team in both Game Jam and Hackathon.
+  // Note: this only covers the team leader (the submitter). Member-level
+  // cross-checking is enforced by the admin during manual review.
+  function isExclusivityViolation(competitionId, uid) {
+    return (competitionId == 'game-jam'
+              && exists(/databases/$(database)/documents/registrations/hackathon/entries/$(uid)))
+        || (competitionId == 'hackathon'
+              && exists(/databases/$(database)/documents/registrations/game-jam/entries/$(uid)));
+  }
+
+  function isValidEntry(data, competitionId) {
+    // Fields every entry must have
+    let hasBase = data.keys().hasAll(['uid', 'competitionId', 'submittedAt'])
       && data.uid == request.auth.uid
+      && data.competitionId == competitionId
+      && data.submittedAt == request.time;
+
+    // Individual entry shape
+    let isIndividual = data.keys().hasAll(['name', 'studentId', 'yearSection', 'email'])
       && data.name is string && data.name.size() > 0 && data.name.size() <= 100
       && data.studentId is string && data.studentId.size() > 0 && data.studentId.size() <= 20
       && data.yearSection is string && data.yearSection.size() > 0 && data.yearSection.size() <= 30
-      && data.email == request.auth.token.email
-      && data.competitions is list && data.competitions.size() >= 1
-      && data.submittedAt == request.time;
+      && data.email == request.auth.token.email;
+
+    // Team entry shape
+    let isTeam = data.keys().hasAll(['teamName', 'leader', 'members', 'totalMembers'])
+      && data.teamName is string && data.teamName.size() > 0 && data.teamName.size() <= 60
+      && data.leader is map
+      && data.leader.email == request.auth.token.email
+      && data.members is list
+      && data.totalMembers is int
+      && data.totalMembers >= 3
+      && data.totalMembers <= 8;
+
+    return hasBase && (isIndividual || isTeam);
   }
 }
