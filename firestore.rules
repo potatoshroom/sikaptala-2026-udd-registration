@@ -42,10 +42,11 @@ service cloud.firestore {
   }
 
   function isValidEntry(data, competitionId) {
-    let hasBase = data.keys().hasAll(['uid', 'competitionId', 'submittedAt'])
+    let hasBase = data.keys().hasAll(['uid', 'competitionId', 'submittedAt', 'status'])
       && data.uid == request.auth.uid
       && data.competitionId == competitionId
-      && data.submittedAt == request.time;
+      && data.submittedAt == request.time
+      && data.status == 'pending';
 
     // Individual entry shape
     let isIndividual = data.keys().hasAll(['name', 'studentId', 'yearLevel', 'program', 'block', 'facebookLink', 'email'])

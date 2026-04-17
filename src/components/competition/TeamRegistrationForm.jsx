@@ -115,6 +115,8 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const [user, setUser] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
+  const [regStatus, setRegStatus] = useState('pending')
+  const [denialReason, setDenialReason] = useState(null)
 
   const [teamName, setTeamName] = useState('')
   const [leader, setLeader] = useState(emptyMember())
@@ -131,7 +133,14 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
       setLeaderEmail(u.email)
       const ref = doc(db, 'registrations', competitionId, 'entries', u.uid)
       const snap = await getDoc(ref)
-      setStatus(snap.exists() ? 'already-registered' : 'idle')
+      if (snap.exists()) {
+        const data = snap.data()
+        setRegStatus(data.status || 'pending')
+        setDenialReason(data.denialReason || null)
+        setStatus('already-registered')
+      } else {
+        setStatus('idle')
+      }
     })
     return unsubscribe
   }, [competitionId, handleUserLoad])
@@ -217,6 +226,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         leader: buildMember(leader, leaderEmail),
         members: members.map((m) => buildMember(m, null)),
         totalMembers,
+        status: 'pending',
         submittedAt: serverTimestamp(),
       })
       navigate('/success', { state: { competitionName } })
@@ -247,14 +257,23 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   }
 
   if (status === 'already-registered') {
+    const statusConfig = {
+      pending:  { symbol: '~',  iconColor: '#F59E0B', title: 'Registration Pending',  body: 'Your registration is under review. You will be notified once a decision has been made.' },
+      approved: { symbol: '✓',  iconColor: color,     title: 'Registration Approved', body: 'Your registration has been approved. The selection committee will be in touch regarding the next steps.' },
+      denied:   { symbol: '✕',  iconColor: '#EF4444', title: 'Registration Denied',   body: 'Your team registration for this competition has been denied.' },
+    }
+    const { symbol, iconColor, title, body } = statusConfig[regStatus] ?? statusConfig.pending
     return (
       <div className="reg-already">
-        <div className="reg-already__icon" style={{ borderColor: color, color }}>✓</div>
-        <h3 className="reg-already__title">Already Registered</h3>
-        <p className="reg-already__body">
-          You have already submitted a team registration for <strong>{competitionName}</strong>.
-          The selection committee will be in touch.
-        </p>
+        <div className="reg-already__icon" style={{ borderColor: iconColor, color: iconColor }}>{symbol}</div>
+        <h3 className="reg-already__title">{title}</h3>
+        <p className="reg-already__body">{body}</p>
+        {regStatus === 'denied' && denialReason && (
+          <div className="reg-already__denial">
+            <p className="reg-already__denial-label">Reason</p>
+            <p className="reg-already__denial-text">{denialReason}</p>
+          </div>
+        )}
         {error && <div className="alert alert--error" role="alert">{error}</div>}
         <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
           Withdraw Registration

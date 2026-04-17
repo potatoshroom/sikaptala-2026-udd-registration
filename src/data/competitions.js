@@ -159,7 +159,7 @@ export const COMPETITIONS = [
         { label: 'Orientation', date: 'Friday, April 24', time: '9:00 AM – 12:00 PM', venue: 'Room L302' },
         { label: 'Ideathon', date: 'April 24 – 26', time: 'After orientation until April 26, 11:59 PM', venue: null },
       ],
-      note: 'A theme will be revealed during orientation. Teams will then undergo the Ideathon proper — developing their problem statement and proposed solution, and creating a pitch deck to be submitted by Sunday, April 26.',
+      note: 'A theme will be revealed during orientation. Teams will then undergo the Ideathon proper, developing their problem statement and proposed solution, and creating a pitch deck to be submitted by Sunday, April 26.',
     },
     topics: [],
     topicsNote: null,
