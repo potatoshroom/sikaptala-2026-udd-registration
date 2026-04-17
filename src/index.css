@@ -1028,6 +1028,14 @@ a { color: var(--color-primary); }
 .theme-callout__label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--callout-color); text-shadow: 0 0 16px var(--callout-color); margin-bottom: 0.45rem; }
 .theme-callout__text { font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.65; font-weight: 500; }
 
+.tryout-languages { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.tryout-note { margin-bottom: 0.85rem; }
+.tryout-sessions { display: flex; flex-direction: column; gap: 0.75rem; }
+.tryout-session { padding-top: 0.65rem; border-top: 1px solid color-mix(in srgb, var(--callout-color) 20%, transparent); }
+.tryout-session__name { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--callout-color); margin-bottom: 0.2rem; }
+.tryout-session__detail { font-size: 0.875rem; color: var(--color-text-muted); font-weight: 500; line-height: 1.5; }
+.tryout-session__venue { font-weight: 600; color: var(--color-text); }
+
 /* =========================================================
    Topics List
    ========================================================= */
@@ -1191,6 +1199,9 @@ a { color: var(--color-primary); }
 .comp-banner__inner { text-align: center; }
 .comp-banner__event { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--comp-color); text-shadow: 0 0 20px var(--comp-color); margin-bottom: 0.5rem; }
 .comp-banner__title { font-size: 2.2rem; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; }
+
+.comp-languages--banner { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.85rem; }
+.comp-language-badge { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid; border-radius: 999px; padding: 0.25rem 0.75rem; }
 
 @media (max-width: 800px) {
   .comp-banner__title { font-size: 1.6rem; }

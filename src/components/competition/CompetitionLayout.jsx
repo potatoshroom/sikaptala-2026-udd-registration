@@ -4,7 +4,7 @@ import { auth } from '../../firebase'
 
 const BASE = import.meta.env.BASE_URL
 
-export default function CompetitionLayout({ competition, user, children, infoChildren }) {
+export default function CompetitionLayout({ competition, user, children, infoChildren, headerChildren }) {
   const navigate = useNavigate()
   const { name, color, colorDark, image } = competition
 
@@ -41,6 +41,7 @@ export default function CompetitionLayout({ competition, user, children, infoChi
         <div className="comp-banner__inner">
           <p className="comp-banner__event">SIKAPTALA 2026</p>
           <h1 className="comp-banner__title">{name}</h1>
+          {headerChildren}
         </div>
       </header>
 

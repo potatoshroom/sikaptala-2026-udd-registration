@@ -16,6 +16,12 @@ export const COMPETITIONS = [
     type: 'individual',
     slots: null,
     registrationOpen: true,
+    tryout: {
+      sessions: [
+        { date: 'Friday, April 24', time: '10:00 AM – 12:00 PM', venue: 'Room L301' },
+      ],
+      note: 'The tryout will be a face-to-face quiz covering the topics listed below.',
+    },
     topics: [
       'Programming Fundamentals',
       'Historical Aspects of Computing',
@@ -37,7 +43,7 @@ export const COMPETITIONS = [
     id: 'skills',
     name: 'CS & IT Skills Competition',
     dates: 'May 14–15',
-    platform: 'HackerRank',
+    platform: '-',
     color: '#7C3AED',
     colorDark: '#5B21B6',
     image: 'skills.jpg',
@@ -45,6 +51,12 @@ export const COMPETITIONS = [
     type: 'individual',
     slots: null,
     registrationOpen: true,
+    tryout: {
+      sessions: [
+        { date: 'Friday, April 24', time: '1:00 PM – 5:00 PM', venue: 'Room L301' },
+      ],
+      note: 'The tryout will be conducted face-to-face. Participants may use either Java or Python to solve the programming challenges.',
+    },
     languages: ['Python', 'Java'],
     topics: [
       'Basic Input/Output and Data Types',
@@ -59,7 +71,7 @@ export const COMPETITIONS = [
       'Basic Algorithm Problem Solving',
     ],
     topicsNote:
-      'Participants will compete using both Python and Java. Problems will test programming fundamentals and problem-solving skills. Topics may include, but are not limited to, the following:',
+      'Problems will test programming fundamentals and problem-solving skills. Topics may include, but are not limited to, the following:',
   },
   {
     id: 'web-design',
@@ -73,6 +85,12 @@ export const COMPETITIONS = [
     type: 'individual',
     slots: null,
     registrationOpen: true,
+    tryout: {
+      sessions: [
+        { date: 'Friday, April 24', time: '1:00 PM – 5:00 PM', venue: 'Room L302' },
+      ],
+      note: 'Participants will be given a theme on the day of the tryout and must base their design on it. All designs must be created using Figma only.',
+    },
     themeNote: 'The official theme will be announced on the day of the competition. All submitted designs must clearly interpret and integrate the assigned theme, applying your own creative approach.',
     topics: [
       'Clear design objectives',
@@ -111,6 +129,13 @@ export const COMPETITIONS = [
     teamSize: { min: 3, max: 6 },
     slots: null,
     registrationOpen: true,
+    tryout: {
+      sessions: [
+        { label: 'Orientation', date: 'Friday, April 24', time: '10:00 AM – 12:00 PM', venue: 'Online' },
+        { label: 'Game Building', date: 'April 24 – 26', time: 'After orientation until April 26, 11:59 PM', venue: null },
+      ],
+      note: 'A theme will be revealed during orientation. Teams will then build a game remotely using any platform, language, or tools of their choice, and must submit their game by Sunday, April 26.',
+    },
     topics: [],
     topicsNote: null,
     eligibilityNote: 'Team members may come from different programs (BSCS or BSIT) or year levels, provided all members are undergraduate students enrolled under the School of Information Technology Education (SITE).',
@@ -129,6 +154,13 @@ export const COMPETITIONS = [
     teamSize: { exact: 6 },
     slots: null,
     registrationOpen: true,
+    tryout: {
+      sessions: [
+        { label: 'Orientation', date: 'Friday, April 24', time: '9:00 AM – 12:00 PM', venue: 'Room L302' },
+        { label: 'Ideathon', date: 'April 24 – 26', time: 'After orientation until April 26, 11:59 PM', venue: null },
+      ],
+      note: 'A theme will be revealed during orientation. Teams will then undergo the Ideathon proper — developing their problem statement and proposed solution, and creating a pitch deck to be submitted by Sunday, April 26.',
+    },
     topics: [],
     topicsNote: null,
     eligibilityNote: 'Team members may come from different programs (BSCS or BSIT) or year levels, provided all members are undergraduate students enrolled under the School of Information Technology Education (SITE).',

@@ -3,6 +3,7 @@ import { getCompetition } from '../../data/competitions'
 import CompetitionLayout from '../../components/competition/CompetitionLayout'
 import TeamRegistrationForm from '../../components/competition/TeamRegistrationForm'
 import EligibilityInfo from '../../components/competition/EligibilityInfo'
+import TryoutSchedule from '../../components/competition/TryoutSchedule'
 
 const competition = getCompetition('hackathon')
 
@@ -15,6 +16,7 @@ export default function Hackathon() {
       user={user}
       infoChildren={
         <>
+          <TryoutSchedule competition={competition} />
           <div className="theme-callout" style={{ '--callout-color': competition.color }}>
             <p className="theme-callout__label">Theme</p>
             <p className="theme-callout__text">{competition.themeNote}</p>

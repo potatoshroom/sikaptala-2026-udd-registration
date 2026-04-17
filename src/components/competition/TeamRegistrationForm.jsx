@@ -210,7 +210,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         return out
       }
 
-      const payload = {
+      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), {
         uid: user.uid,
         competitionId,
         teamName: teamName.trim(),
@@ -218,11 +218,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         members: members.map((m) => buildMember(m, null)),
         totalMembers,
         submittedAt: serverTimestamp(),
-      }
-      console.log('[DEBUG] leaderEmail state:', leaderEmail)
-      console.log('[DEBUG] user.email:', user.email)
-      console.log('[DEBUG] payload:', JSON.stringify(payload, null, 2))
-      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), payload)
+      })
       navigate('/success', { state: { competitionName } })
     } catch (err) {
       console.error(err)
