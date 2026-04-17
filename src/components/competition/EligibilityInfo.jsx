@@ -5,8 +5,11 @@
  * Props:
  *   competition — competition object from competitions.js
  */
+import { formatTeamSize } from '../../data/competitions'
+
 export default function EligibilityInfo({ competition }) {
   const { color, teamSize, eligibilityNote, exclusiveWith } = competition
+  const teamSizeLabel = formatTeamSize(teamSize)
 
   return (
     <>
@@ -29,7 +32,7 @@ export default function EligibilityInfo({ competition }) {
         <p className="eligibility-note__label">Eligibility</p>
         <p className="eligibility-note__text">{eligibilityNote}</p>
         <p className="eligibility-note__team-size">
-          Team size: <strong>{teamSize.min}–{teamSize.max} members</strong>
+          Team size: <strong>{teamSizeLabel} members</strong>
         </p>
       </div>
     </>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../firebase'
-import { COMPETITIONS } from '../data/competitions'
+import { COMPETITIONS, formatTeamSize } from '../data/competitions'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -23,18 +23,26 @@ export default function Register() {
 
   const carouselRef = useRef(null)
   const isDragging = useRef(false)
+  const isHovered = useRef(false)
   const dragStartX = useRef(0)
   const dragScrollLeft = useRef(0)
 
-  // Auto-scroll via rAF; pauses while dragging
+  // Auto-scroll via rAF; pauses while dragging or hovering
   useEffect(() => {
     if (viewMode !== 'carousel') return
     let frame
+    let scrollPos = 0
     function tick() {
       const el = carouselRef.current
-      if (el && !isDragging.current) {
-        el.scrollLeft += 1
-        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft = 0
+      if (el) {
+        if (!isDragging.current && !isHovered.current) {
+          scrollPos += 0.4
+          if (scrollPos >= el.scrollWidth / 2) scrollPos = 0
+          el.scrollLeft = scrollPos
+        } else {
+          // Keep accumulator in sync so resume doesn't snap
+          scrollPos = el.scrollLeft
+        }
       }
       frame = requestAnimationFrame(tick)
     }
@@ -155,10 +163,11 @@ export default function Register() {
         <div
           className="comp-carousel"
           ref={carouselRef}
+          onMouseEnter={() => { isHovered.current = true }}
+          onMouseLeave={() => { isHovered.current = false; onMouseUp() }}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
           onTouchCancel={onTouchEnd}
@@ -216,7 +225,7 @@ function CompCard({ comp, route, base }) {
           <span className="comp-card__type">
             {comp.type === 'individual'
               ? 'Individual'
-              : `Team · ${comp.teamSize?.min}–${comp.teamSize?.max} members`}
+              : `Team · ${formatTeamSize(comp.teamSize)} members`}
           </span>
         )}
         {comp.adviserNote && (

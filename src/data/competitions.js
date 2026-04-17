@@ -126,7 +126,7 @@ export const COMPETITIONS = [
     image: 'hackathon.jpg',
     description: 'Fast-paced team software development challenge.',
     type: 'team',
-    teamSize: { min: 3, max: 8 },
+    teamSize: { exact: 6 },
     slots: null,
     registrationOpen: true,
     topics: [],
@@ -141,4 +141,24 @@ export const COMPETITIONS = [
 /** Returns a competition by its id, or undefined. */
 export function getCompetition(id) {
   return COMPETITIONS.find((c) => c.id === id)
+}
+
+/**
+ * Normalises teamSize to { min, max } regardless of whether
+ * the source uses { min, max } or { exact }.
+ */
+export function resolveTeamSize(teamSize) {
+  if (!teamSize) return null
+  if (teamSize.exact != null) return { min: teamSize.exact, max: teamSize.exact }
+  return teamSize
+}
+
+/**
+ * Returns a human-readable team size string.
+ * e.g. "Exactly 6" or "3–8"
+ */
+export function formatTeamSize(teamSize) {
+  if (!teamSize) return null
+  if (teamSize.exact != null) return `Exactly ${teamSize.exact}`
+  return `${teamSize.min}–${teamSize.max}`
 }

@@ -3,6 +3,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
+import { resolveTeamSize, formatTeamSize } from '../../data/competitions'
 
 const PROGRAMS = ['BSCS', 'BSIT']
 
@@ -12,15 +13,13 @@ function emptyMember() {
 
 /**
  * Reusable team registration form.
- *
- * Props:
- *   competition  — competition object from competitions.js
- *                  expects: id, name, color, teamSize: { min, max }
- *   onUserLoad   — optional callback(user) for the layout header
+ * Supports teamSize: { min, max } or { exact }.
  */
 export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const navigate = useNavigate()
-  const { id: competitionId, name: competitionName, color, teamSize } = competition
+  const { id: competitionId, name: competitionName, color } = competition
+  const teamSize = resolveTeamSize(competition.teamSize)
+  const teamSizeLabel = formatTeamSize(competition.teamSize)
   // Leader counts as one member, so additional slots are min-1 to max-1
   const minAdditional = teamSize.min - 1
   const maxAdditional = teamSize.max - 1
@@ -89,7 +88,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
     const totalMembers = 1 + members.length
     if (totalMembers < teamSize.min || totalMembers > teamSize.max) {
-      setError(`Team must have ${teamSize.min}–${teamSize.max} members (currently ${totalMembers}).`); return
+      setError(`Team must have ${teamSizeLabel} member${teamSize.min === teamSize.max ? '' : 's'} (currently ${totalMembers}).`); return
     }
 
     setStatus('submitting')
@@ -150,7 +149,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     <form className="reg-form" onSubmit={handleSubmit} noValidate>
       <h2 className="reg-form__title">Team Registration</h2>
       <p className="reg-form__subtitle">
-        {teamSize.min}–{teamSize.max} members · The person submitting this form is the team leader.
+        {teamSizeLabel} members · The person submitting this form is the team leader.
       </p>
 
       {/* Team name */}
