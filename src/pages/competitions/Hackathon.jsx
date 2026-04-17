@@ -17,16 +17,6 @@ export default function Hackathon() {
       infoChildren={
         <>
           <TryoutSchedule competition={competition} />
-          <div className="theme-callout" style={{ '--callout-color': competition.color }}>
-            <p className="theme-callout__label">Theme</p>
-            <p className="theme-callout__text">{competition.themeNote}</p>
-          </div>
-
-          <div className="theme-callout" style={{ '--callout-color': competition.color }}>
-            <p className="theme-callout__label">Selection Process</p>
-            <p className="theme-callout__text">{competition.processNote}</p>
-          </div>
-
           <EligibilityInfo competition={competition} />
         </>
       }

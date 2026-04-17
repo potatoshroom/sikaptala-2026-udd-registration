@@ -1029,12 +1029,27 @@ a { color: var(--color-primary); }
 .theme-callout__text { font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.65; font-weight: 500; }
 
 .tryout-languages { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-.tryout-note { margin-bottom: 0.85rem; }
-.tryout-sessions { display: flex; flex-direction: column; gap: 0.75rem; }
-.tryout-session { padding-top: 0.65rem; border-top: 1px solid color-mix(in srgb, var(--callout-color) 20%, transparent); }
-.tryout-session__name { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--callout-color); margin-bottom: 0.2rem; }
-.tryout-session__detail { font-size: 0.875rem; color: var(--color-text-muted); font-weight: 500; line-height: 1.5; }
-.tryout-session__venue { font-weight: 600; color: var(--color-text); }
+
+/* ── Tryout Card ── */
+.tryout-card {
+  background: color-mix(in srgb, var(--callout-color) 10%, rgba(255,255,255,0.03));
+  border: 1px solid color-mix(in srgb, var(--callout-color) 35%, transparent);
+  border-left: 3px solid var(--callout-color);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 32px color-mix(in srgb, var(--callout-color) 12%, transparent), 0 4px 16px rgba(0,0,0,0.35);
+}
+.tryout-card__label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--callout-color); text-shadow: 0 0 16px var(--callout-color); margin-bottom: 0.9rem; }
+.tryout-card__note { font-size: 0.84rem; color: var(--color-text-muted); line-height: 1.65; font-weight: 500; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid color-mix(in srgb, var(--callout-color) 20%, transparent); }
+
+.tryout-sessions { display: flex; flex-direction: column; gap: 0.9rem; }
+.tryout-session { display: flex; flex-direction: column; gap: 0.2rem; padding-top: 0.9rem; border-top: 1px solid color-mix(in srgb, var(--callout-color) 18%, transparent); }
+.tryout-session:first-child { padding-top: 0; border-top: none; }
+.tryout-session__name { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--callout-color); text-shadow: 0 0 10px color-mix(in srgb, var(--callout-color) 60%, transparent); margin-bottom: 0.15rem; }
+.tryout-session__date { font-size: 1rem; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.tryout-session__time { font-size: 0.84rem; font-weight: 600; color: var(--callout-color); }
+.tryout-session__venue { display: inline-block; margin-top: 0.35rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--callout-color); background: color-mix(in srgb, var(--callout-color) 12%, transparent); border: 1px solid color-mix(in srgb, var(--callout-color) 30%, transparent); border-radius: 999px; padding: 0.2rem 0.65rem; }
 
 /* =========================================================
    Topics List
