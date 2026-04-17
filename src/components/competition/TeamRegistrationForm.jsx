@@ -6,6 +6,88 @@ import { auth, db } from '../../firebase'
 import { resolveTeamSize, formatTeamSize } from '../../data/competitions'
 import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
 
+function MemberGrid({ prefix, values, onChange, showEmail, email }) {
+  const majors = getMajors(values.yearLevel, values.program)
+  const blocks = getBlocks(values.yearLevel, values.program, values.major)
+  return (
+    <div className="form-grid">
+      <div className="form-field form-field--full">
+        <label htmlFor={`${prefix}-name`}>Full Name *</label>
+        <input
+          id={`${prefix}-name`} name="name" type="text"
+          value={values.name} onChange={onChange}
+          placeholder="Last Name, First Name M.I."
+          required maxLength={100}
+        />
+      </div>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-studentId`}>Student ID *</label>
+        <input
+          id={`${prefix}-studentId`} name="studentId" type="text"
+          value={values.studentId} onChange={onChange}
+          placeholder="e.g. 12-3456-789"
+          required maxLength={11}
+        />
+      </div>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-yearLevel`}>Year Level *</label>
+        <select id={`${prefix}-yearLevel`} name="yearLevel" value={values.yearLevel} onChange={onChange} required>
+          <option value="">Select year level</option>
+          {YEAR_LEVELS.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-program`}>Program *</label>
+        <select id={`${prefix}-program`} name="program" value={values.program} onChange={onChange} required disabled={!values.yearLevel}>
+          <option value="">Select program</option>
+          {values.yearLevel && PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </div>
+      {majors && (
+        <div className="form-field">
+          <label htmlFor={`${prefix}-major`}>Major *</label>
+          <select id={`${prefix}-major`} name="major" value={values.major} onChange={onChange} required>
+            <option value="">Select major</option>
+            {majors.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+      )}
+      <div className="form-field">
+        <label htmlFor={`${prefix}-block`}>Block *</label>
+        <select id={`${prefix}-block`} name="block" value={values.block} onChange={onChange} required disabled={blocks.length === 0}>
+          <option value="">Select block</option>
+          {blocks.map((b) => <option key={b} value={b}>{b}</option>)}
+        </select>
+        <span className="form-field__hint">
+          If you are irregular, select the block where you have the most major subjects enrolled in.
+        </span>
+      </div>
+      <div className="form-field form-field--full">
+        <label htmlFor={`${prefix}-facebookLink`}>Facebook Profile *</label>
+        <div className="input-group">
+          <span className="input-group__prefix">facebook.com/</span>
+          <input
+            id={`${prefix}-facebookLink`} name="facebookLink" type="text"
+            value={values.facebookLink} onChange={onChange}
+            placeholder="yourprofile"
+            required maxLength={200}
+          />
+        </div>
+      </div>
+      {showEmail && (
+        <div className="form-field">
+          <label htmlFor={`${prefix}-email`}>Email</label>
+          <input
+            id={`${prefix}-email`} name="email" type="email"
+            value={email} readOnly className="input--readonly"
+          />
+          <span className="form-field__hint">From your Google account</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function emptyMember() {
   return { name: '', studentId: '', yearLevel: '', program: '', major: '', block: '', facebookLink: '' }
 }
@@ -123,12 +205,12 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
           block: m.block,
         }
         if (getMajors(m.yearLevel, m.program)) out.major = m.major
-        out.facebookLink = m.facebookLink.trim()
-        if (email) out.email = email
+        out.facebookLink = `https://www.facebook.com/${m.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
+        if (email != null) out.email = email
         return out
       }
 
-      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), {
+      const payload = {
         uid: user.uid,
         competitionId,
         teamName: teamName.trim(),
@@ -136,7 +218,11 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         members: members.map((m) => buildMember(m, null)),
         totalMembers,
         submittedAt: serverTimestamp(),
-      })
+      }
+      console.log('[DEBUG] leaderEmail state:', leaderEmail)
+      console.log('[DEBUG] user.email:', user.email)
+      console.log('[DEBUG] payload:', JSON.stringify(payload, null, 2))
+      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), payload)
       navigate('/success', { state: { competitionName } })
     } catch (err) {
       console.error(err)
@@ -183,85 +269,6 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
   const canAddMore = members.length < maxAdditional
   const canRemove = members.length > minAdditional
-
-  function MemberGrid({ prefix, values, onChange, showEmail, email }) {
-    const majors = getMajors(values.yearLevel, values.program)
-    const blocks = getBlocks(values.yearLevel, values.program, values.major)
-    return (
-      <div className="form-grid">
-        <div className="form-field form-field--full">
-          <label htmlFor={`${prefix}-name`}>Full Name *</label>
-          <input
-            id={`${prefix}-name`} name="name" type="text"
-            value={values.name} onChange={onChange}
-            placeholder="Last Name, First Name M.I."
-            required maxLength={100}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor={`${prefix}-studentId`}>Student ID *</label>
-          <input
-            id={`${prefix}-studentId`} name="studentId" type="text"
-            value={values.studentId} onChange={onChange}
-            placeholder="e.g. 12-3456-789"
-            required maxLength={11}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor={`${prefix}-yearLevel`}>Year Level *</label>
-          <select id={`${prefix}-yearLevel`} name="yearLevel" value={values.yearLevel} onChange={onChange} required>
-            <option value="">Select year level</option>
-            {YEAR_LEVELS.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
-        </div>
-        <div className="form-field">
-          <label htmlFor={`${prefix}-program`}>Program *</label>
-          <select id={`${prefix}-program`} name="program" value={values.program} onChange={onChange} required disabled={!values.yearLevel}>
-            <option value="">Select program</option>
-            {values.yearLevel && PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </div>
-        {majors && (
-          <div className="form-field">
-            <label htmlFor={`${prefix}-major`}>Major *</label>
-            <select id={`${prefix}-major`} name="major" value={values.major} onChange={onChange} required>
-              <option value="">Select major</option>
-              {majors.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-        )}
-        <div className="form-field">
-          <label htmlFor={`${prefix}-block`}>Block *</label>
-          <select id={`${prefix}-block`} name="block" value={values.block} onChange={onChange} required disabled={blocks.length === 0}>
-            <option value="">Select block</option>
-            {blocks.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-          <span className="form-field__hint">
-            If you are irregular, select the block where you have the most major subjects enrolled in.
-          </span>
-        </div>
-        <div className="form-field form-field--full">
-          <label htmlFor={`${prefix}-facebookLink`}>Facebook Profile Link *</label>
-          <input
-            id={`${prefix}-facebookLink`} name="facebookLink" type="url"
-            value={values.facebookLink} onChange={onChange}
-            placeholder="https://facebook.com/yourprofile"
-            required maxLength={200}
-          />
-        </div>
-        {showEmail && (
-          <div className="form-field">
-            <label htmlFor={`${prefix}-email`}>Email</label>
-            <input
-              id={`${prefix}-email`} name="email" type="email"
-              value={email} readOnly className="input--readonly"
-            />
-            <span className="form-field__hint">From your Google account</span>
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <form className="reg-form" onSubmit={handleSubmit} noValidate>

@@ -65,6 +65,9 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
       setError('Student ID must follow the format: 12-3456-789.'); return
     }
 
+    const cleanFbPath = form.facebookLink.trim().split('?')[0].replace(/#.*$/, '')
+    const facebookLink = `https://www.facebook.com/${cleanFbPath}`
+
     setStatus('submitting')
     try {
       const data = {
@@ -75,7 +78,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         yearLevel: form.yearLevel,
         program: form.program,
         block: form.block,
-        facebookLink: form.facebookLink.trim(),
+        facebookLink,
         email: form.email,
         submittedAt: serverTimestamp(),
       }
@@ -193,13 +196,16 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         </div>
 
         <div className="form-field form-field--full">
-          <label htmlFor="facebookLink">Facebook Profile Link *</label>
-          <input
-            id="facebookLink" name="facebookLink" type="url"
-            value={form.facebookLink} onChange={handleField}
-            placeholder="https://facebook.com/yourprofile"
-            required maxLength={200}
-          />
+          <label htmlFor="facebookLink">Facebook Profile *</label>
+          <div className="input-group">
+            <span className="input-group__prefix">facebook.com/</span>
+            <input
+              id="facebookLink" name="facebookLink" type="text"
+              value={form.facebookLink} onChange={handleField}
+              placeholder="yourprofile"
+              required maxLength={200}
+            />
+          </div>
         </div>
 
         <div className="form-field form-field--full">

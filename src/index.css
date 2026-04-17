@@ -776,6 +776,32 @@ a { color: var(--color-primary); }
   opacity: 0.7;
 }
 
+.input-group {
+  display: flex;
+  align-items: stretch;
+}
+.input-group__prefix {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 0.75rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+.input-group input {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+  min-width: 0;
+}
+.input-group:focus-within .input-group__prefix {
+  border-color: rgba(91,124,250,0.5);
+}
+
 .form-field select {
   cursor: pointer;
 }

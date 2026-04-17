@@ -12,9 +12,8 @@ service cloud.firestore {
                     && !isExclusivityViolation(competitionId, uid);
 
       // Allow the submitter to read their own entry (for the "already registered" check).
-      allow read: if request.auth != null
-                  && request.auth.uid == uid
-                  && isAllowedDomain();
+      // Allow any authenticated UDD/CDD user to read all entries (admin portal).
+      allow read: if isAllowedDomain();
 
       // Allow the submitter to delete (withdraw) their own registration.
       allow delete: if request.auth != null
@@ -37,9 +36,9 @@ service cloud.firestore {
   // cross-checking is enforced by the admin during manual review.
   function isExclusivityViolation(competitionId, uid) {
     return (competitionId == 'game-jam'
-              && exists(/databases/$(database)/documents/registrations/hackathon/entries/$(uid)))
+              && exists(/databases/(default)/documents/registrations/hackathon/entries/$(uid)))
         || (competitionId == 'hackathon'
-              && exists(/databases/$(database)/documents/registrations/game-jam/entries/$(uid)));
+              && exists(/databases/(default)/documents/registrations/game-jam/entries/$(uid)));
   }
 
   function isValidEntry(data, competitionId) {
