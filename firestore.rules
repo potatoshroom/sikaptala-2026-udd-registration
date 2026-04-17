@@ -20,7 +20,11 @@ service cloud.firestore {
                     && request.auth.uid == uid
                     && isAllowedDomain();
 
-      allow update: if false;
+      // Allow any authenticated UDD/CDD user to update status (and optionally denialReason) only.
+      // Note: no admin role exists yet — any UDD/CDD account can technically call this.
+      allow update: if isAllowedDomain()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'denialReason'])
+                    && request.resource.data.status in ['pending', 'approved', 'denied'];
     }
 
   }
