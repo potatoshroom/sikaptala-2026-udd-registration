@@ -5,8 +5,6 @@ service cloud.firestore {
 
     // Path: registrations/{competitionId}/entries/{uid}
     // The document ID is the submitter's Firebase UID.
-    // Individual competitions: one entry per student.
-    // Team competitions: one entry per team leader (leader submits for the whole team).
     match /registrations/{competitionId}/entries/{uid} {
       allow create: if isAllowedDomain()
                     && request.auth.uid == uid
@@ -18,7 +16,12 @@ service cloud.firestore {
                   && request.auth.uid == uid
                   && isAllowedDomain();
 
-      allow update, delete: if false;
+      // Allow the submitter to delete (withdraw) their own registration.
+      allow delete: if request.auth != null
+                    && request.auth.uid == uid
+                    && isAllowedDomain();
+
+      allow update: if false;
     }
 
   }
@@ -40,17 +43,19 @@ service cloud.firestore {
   }
 
   function isValidEntry(data, competitionId) {
-    // Fields every entry must have
     let hasBase = data.keys().hasAll(['uid', 'competitionId', 'submittedAt'])
       && data.uid == request.auth.uid
       && data.competitionId == competitionId
       && data.submittedAt == request.time;
 
     // Individual entry shape
-    let isIndividual = data.keys().hasAll(['name', 'studentId', 'yearSection', 'email'])
+    let isIndividual = data.keys().hasAll(['name', 'studentId', 'yearLevel', 'program', 'block', 'facebookLink', 'email'])
       && data.name is string && data.name.size() > 0 && data.name.size() <= 100
-      && data.studentId is string && data.studentId.size() > 0 && data.studentId.size() <= 20
-      && data.yearSection is string && data.yearSection.size() > 0 && data.yearSection.size() <= 30
+      && data.studentId is string && data.studentId.size() > 0 && data.studentId.size() <= 11
+      && data.yearLevel is string && data.yearLevel.size() > 0
+      && data.program is string && data.program.size() > 0
+      && data.block is string && data.block.size() > 0
+      && data.facebookLink is string && data.facebookLink.size() > 0
       && data.email == request.auth.token.email;
 
     // Team entry shape
@@ -60,7 +65,7 @@ service cloud.firestore {
       && data.leader.email == request.auth.token.email
       && data.members is list
       && data.totalMembers is int
-      && data.totalMembers >= 3
+      && data.totalMembers >= 2
       && data.totalMembers <= 8;
 
     return hasBase && (isIndividual || isTeam);

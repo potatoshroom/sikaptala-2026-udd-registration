@@ -1053,6 +1053,8 @@ a { color: var(--color-primary); }
 .reg-already__icon { width: 52px; height: 52px; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; box-shadow: 0 0 20px currentColor; }
 .reg-already__title { font-size: 1rem; font-weight: 800; }
 .reg-already__body { font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6; font-weight: 500; }
+.btn-withdraw { margin-top: 0.25rem; background: none; border: 1px solid rgba(239,68,68,0.4); color: #ef4444; border-radius: var(--radius-md); padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.btn-withdraw:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.7); }
 
 /* =========================================================
    Team Member Blocks
@@ -1160,6 +1162,7 @@ a { color: var(--color-primary); }
   max-width: 1100px;
   margin: 0 auto;
 }
+.comp-banner__inner { text-align: center; }
 .comp-banner__event { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--comp-color); text-shadow: 0 0 20px var(--comp-color); margin-bottom: 0.5rem; }
 .comp-banner__title { font-size: 2.2rem; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; }
 
@@ -1168,19 +1171,13 @@ a { color: var(--color-primary); }
 }
 
 .comp-body {
-  display: grid;
-  grid-template-columns: 1fr 420px;
+  display: flex;
+  flex-direction: column;
   gap: 1.75rem;
-  max-width: 1100px;
+  max-width: 760px;
   margin: 2rem auto;
   padding: 0 1.75rem 5rem;
   width: 100%;
-  align-items: start;
 }
 
-@media (max-width: 800px) {
-  .comp-body { grid-template-columns: 1fr; }
-  .comp-form-col { position: static; }
-}
-
-.comp-form-col { position: sticky; top: 1.25rem; }
+.comp-form-col { width: 100%; }

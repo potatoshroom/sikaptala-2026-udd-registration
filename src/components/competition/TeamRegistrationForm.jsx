@@ -1,14 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
 import { resolveTeamSize, formatTeamSize } from '../../data/competitions'
-
-const PROGRAMS = ['BSCS', 'BSIT']
+import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
 
 function emptyMember() {
-  return { name: '', studentId: '', yearSection: '', program: '' }
+  return { name: '', studentId: '', yearLevel: '', program: '', major: '', block: '', facebookLink: '' }
+}
+
+function cascadeReset(prev, name, value) {
+  const next = { ...prev, [name]: value }
+  if (name === 'yearLevel') { next.program = ''; next.major = ''; next.block = '' }
+  if (name === 'program')   { next.major = ''; next.block = '' }
+  if (name === 'major')     { next.block = '' }
+  return next
 }
 
 /**
@@ -20,17 +27,16 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const { id: competitionId, name: competitionName, color } = competition
   const teamSize = resolveTeamSize(competition.teamSize)
   const teamSizeLabel = formatTeamSize(competition.teamSize)
-  // Leader counts as one member, so additional slots are min-1 to max-1
   const minAdditional = teamSize.min - 1
   const maxAdditional = teamSize.max - 1
 
   const [user, setUser] = useState(null)
-  const [status, setStatus] = useState('loading') // 'loading' | 'idle' | 'already-registered' | 'submitting'
+  const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
 
   const [teamName, setTeamName] = useState('')
-  const [leader, setLeader] = useState({ name: '', studentId: '', yearSection: '', program: '', email: '' })
-  // Start with the minimum required additional members pre-populated
+  const [leader, setLeader] = useState(emptyMember())
+  const [leaderEmail, setLeaderEmail] = useState('')
   const [members, setMembers] = useState(() => Array.from({ length: minAdditional }, emptyMember))
 
   const handleUserLoad = useCallback(onUserLoad, [])
@@ -40,8 +46,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
       if (!u) return
       setUser(u)
       handleUserLoad?.(u)
-      setLeader((prev) => ({ ...prev, email: u.email }))
-
+      setLeaderEmail(u.email)
       const ref = doc(db, 'registrations', competitionId, 'entries', u.uid)
       const snap = await getDoc(ref)
       setStatus(snap.exists() ? 'already-registered' : 'idle')
@@ -51,12 +56,12 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
   function handleLeaderField(e) {
     const { name, value } = e.target
-    setLeader((prev) => ({ ...prev, [name]: value }))
+    setLeader((prev) => cascadeReset(prev, name, value))
   }
 
   function handleMemberField(index, e) {
     const { name, value } = e.target
-    setMembers((prev) => prev.map((m, i) => i === index ? { ...m, [name]: value } : m))
+    setMembers((prev) => prev.map((m, i) => i === index ? cascadeReset(m, name, value) : m))
   }
 
   function addMember() {
@@ -73,16 +78,32 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     e.preventDefault()
     setError(null)
 
-    // Validate leader
+    const RE_STUDENT_ID = /^\d{2}-\d{4}-\d{3}$/
+
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
-    if (!leader.name.trim() || !leader.studentId.trim() || !leader.yearSection.trim() || !leader.program) {
+
+    const leaderMajors = getMajors(leader.yearLevel, leader.program)
+    if (!leader.name.trim() || !leader.studentId.trim() || !leader.yearLevel || !leader.program || !leader.block || !leader.facebookLink.trim()) {
       setError('Please complete all team leader fields.'); return
     }
-    // Validate all members
+    if (leaderMajors && !leader.major) {
+      setError('Please select a major for the team leader.'); return
+    }
+    if (!RE_STUDENT_ID.test(leader.studentId.trim())) {
+      setError('Team leader student ID must follow the format: 12-3456-789.'); return
+    }
+
     for (let i = 0; i < members.length; i++) {
       const m = members[i]
-      if (!m.name.trim() || !m.studentId.trim() || !m.yearSection.trim() || !m.program) {
+      const mMajors = getMajors(m.yearLevel, m.program)
+      if (!m.name.trim() || !m.studentId.trim() || !m.yearLevel || !m.program || !m.block || !m.facebookLink.trim()) {
         setError(`Please complete all fields for Member ${i + 2}.`); return
+      }
+      if (mMajors && !m.major) {
+        setError(`Please select a major for Member ${i + 2}.`); return
+      }
+      if (!RE_STUDENT_ID.test(m.studentId.trim())) {
+        setError(`Member ${i + 2} student ID must follow the format: 12-3456-789.`); return
       }
     }
 
@@ -93,23 +114,26 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
     setStatus('submitting')
     try {
+      const buildMember = (m, email) => {
+        const out = {
+          name: m.name.trim(),
+          studentId: m.studentId.trim(),
+          yearLevel: m.yearLevel,
+          program: m.program,
+          block: m.block,
+        }
+        if (getMajors(m.yearLevel, m.program)) out.major = m.major
+        out.facebookLink = m.facebookLink.trim()
+        if (email) out.email = email
+        return out
+      }
+
       await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), {
         uid: user.uid,
         competitionId,
         teamName: teamName.trim(),
-        leader: {
-          name: leader.name.trim(),
-          studentId: leader.studentId.trim(),
-          yearSection: leader.yearSection.trim(),
-          program: leader.program,
-          email: leader.email,
-        },
-        members: members.map((m) => ({
-          name: m.name.trim(),
-          studentId: m.studentId.trim(),
-          yearSection: m.yearSection.trim(),
-          program: m.program,
-        })),
+        leader: buildMember(leader, leaderEmail),
+        members: members.map((m) => buildMember(m, null)),
         totalMembers,
         submittedAt: serverTimestamp(),
       })
@@ -125,8 +149,19 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     }
   }
 
-  if (status === 'loading') {
-    return <div className="reg-form-loading">Checking registration status…</div>
+  if (status === 'loading') return <div className="reg-form-loading">Checking registration status…</div>
+
+  async function handleWithdraw() {
+    if (!window.confirm('Are you sure you want to withdraw your team registration? This cannot be undone.')) return
+    setStatus('loading')
+    try {
+      await deleteDoc(doc(db, 'registrations', competitionId, 'entries', user.uid))
+      setStatus('idle')
+    } catch (err) {
+      console.error(err)
+      setStatus('already-registered')
+      setError('Withdrawal failed. Please check your connection and try again.')
+    }
   }
 
   if (status === 'already-registered') {
@@ -138,12 +173,95 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
           You have already submitted a team registration for <strong>{competitionName}</strong>.
           The selection committee will be in touch.
         </p>
+        {error && <div className="alert alert--error" role="alert">{error}</div>}
+        <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
+          Withdraw Registration
+        </button>
       </div>
     )
   }
 
   const canAddMore = members.length < maxAdditional
   const canRemove = members.length > minAdditional
+
+  function MemberGrid({ prefix, values, onChange, showEmail, email }) {
+    const majors = getMajors(values.yearLevel, values.program)
+    const blocks = getBlocks(values.yearLevel, values.program, values.major)
+    return (
+      <div className="form-grid">
+        <div className="form-field form-field--full">
+          <label htmlFor={`${prefix}-name`}>Full Name *</label>
+          <input
+            id={`${prefix}-name`} name="name" type="text"
+            value={values.name} onChange={onChange}
+            placeholder="Last Name, First Name M.I."
+            required maxLength={100}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor={`${prefix}-studentId`}>Student ID *</label>
+          <input
+            id={`${prefix}-studentId`} name="studentId" type="text"
+            value={values.studentId} onChange={onChange}
+            placeholder="e.g. 12-3456-789"
+            required maxLength={11}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor={`${prefix}-yearLevel`}>Year Level *</label>
+          <select id={`${prefix}-yearLevel`} name="yearLevel" value={values.yearLevel} onChange={onChange} required>
+            <option value="">Select year level</option>
+            {YEAR_LEVELS.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor={`${prefix}-program`}>Program *</label>
+          <select id={`${prefix}-program`} name="program" value={values.program} onChange={onChange} required disabled={!values.yearLevel}>
+            <option value="">Select program</option>
+            {values.yearLevel && PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
+        {majors && (
+          <div className="form-field">
+            <label htmlFor={`${prefix}-major`}>Major *</label>
+            <select id={`${prefix}-major`} name="major" value={values.major} onChange={onChange} required>
+              <option value="">Select major</option>
+              {majors.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+        )}
+        <div className="form-field">
+          <label htmlFor={`${prefix}-block`}>Block *</label>
+          <select id={`${prefix}-block`} name="block" value={values.block} onChange={onChange} required disabled={blocks.length === 0}>
+            <option value="">Select block</option>
+            {blocks.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <span className="form-field__hint">
+            If you are irregular, select the block where you have the most major subjects enrolled in.
+          </span>
+        </div>
+        <div className="form-field form-field--full">
+          <label htmlFor={`${prefix}-facebookLink`}>Facebook Profile Link *</label>
+          <input
+            id={`${prefix}-facebookLink`} name="facebookLink" type="url"
+            value={values.facebookLink} onChange={onChange}
+            placeholder="https://facebook.com/yourprofile"
+            required maxLength={200}
+          />
+        </div>
+        {showEmail && (
+          <div className="form-field">
+            <label htmlFor={`${prefix}-email`}>Email</label>
+            <input
+              id={`${prefix}-email`} name="email" type="email"
+              value={email} readOnly className="input--readonly"
+            />
+            <span className="form-field__hint">From your Google account</span>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <form className="reg-form" onSubmit={handleSubmit} noValidate>
@@ -152,101 +270,28 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         {teamSizeLabel} members · The person submitting this form is the team leader.
       </p>
 
-      {/* Team name */}
       <div className="form-field">
         <label htmlFor="teamName">Team Name *</label>
         <input
-          id="teamName"
-          name="teamName"
-          type="text"
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
+          id="teamName" name="teamName" type="text"
+          value={teamName} onChange={(e) => setTeamName(e.target.value)}
           placeholder="Enter your team name"
-          required
-          maxLength={60}
+          required maxLength={60}
         />
       </div>
 
-      {/* Leader */}
       <div className="team-member-block team-member-block--leader" style={{ '--member-color': color }}>
         <p className="team-member-block__label">Member 1 — Team Leader (You)</p>
-        <div className="form-grid">
-          <div className="form-field form-field--full">
-            <label htmlFor="leaderName">Full Name *</label>
-            <input
-              id="leaderName"
-              name="name"
-              type="text"
-              value={leader.name}
-              onChange={handleLeaderField}
-              placeholder="Last Name, First Name M.I."
-              required
-              maxLength={100}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="leaderStudentId">Student ID *</label>
-            <input
-              id="leaderStudentId"
-              name="studentId"
-              type="text"
-              value={leader.studentId}
-              onChange={handleLeaderField}
-              placeholder="e.g. 2023-12345"
-              required
-              maxLength={20}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="leaderYearSection">Year & Section *</label>
-            <input
-              id="leaderYearSection"
-              name="yearSection"
-              type="text"
-              value={leader.yearSection}
-              onChange={handleLeaderField}
-              placeholder="e.g. 3-BSIT-A"
-              required
-              maxLength={30}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="leaderProgram">Program *</label>
-            <select
-              id="leaderProgram"
-              name="program"
-              value={leader.program}
-              onChange={handleLeaderField}
-              required
-            >
-              <option value="">Select program</option>
-              {PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="leaderEmail">Email</label>
-            <input
-              id="leaderEmail"
-              name="email"
-              type="email"
-              value={leader.email}
-              readOnly
-              className="input--readonly"
-            />
-            <span className="form-field__hint">From your Google account</span>
-          </div>
-        </div>
+        <MemberGrid prefix="leader" values={leader} onChange={handleLeaderField} showEmail email={leaderEmail} />
       </div>
 
-      {/* Additional members */}
       {members.map((member, index) => (
         <div key={index} className="team-member-block" style={{ '--member-color': color }}>
           <div className="team-member-block__header">
             <p className="team-member-block__label">Member {index + 2}</p>
             {canRemove && (
               <button
-                type="button"
-                className="btn-remove-member"
+                type="button" className="btn-remove-member"
                 onClick={() => removeMember(index)}
                 aria-label={`Remove member ${index + 2}`}
               >
@@ -254,83 +299,27 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
               </button>
             )}
           </div>
-          <div className="form-grid">
-            <div className="form-field form-field--full">
-              <label htmlFor={`member-${index}-name`}>Full Name *</label>
-              <input
-                id={`member-${index}-name`}
-                name="name"
-                type="text"
-                value={member.name}
-                onChange={(e) => handleMemberField(index, e)}
-                placeholder="Last Name, First Name M.I."
-                required
-                maxLength={100}
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor={`member-${index}-studentId`}>Student ID *</label>
-              <input
-                id={`member-${index}-studentId`}
-                name="studentId"
-                type="text"
-                value={member.studentId}
-                onChange={(e) => handleMemberField(index, e)}
-                placeholder="e.g. 2023-12345"
-                required
-                maxLength={20}
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor={`member-${index}-yearSection`}>Year & Section *</label>
-              <input
-                id={`member-${index}-yearSection`}
-                name="yearSection"
-                type="text"
-                value={member.yearSection}
-                onChange={(e) => handleMemberField(index, e)}
-                placeholder="e.g. 3-BSIT-A"
-                required
-                maxLength={30}
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor={`member-${index}-program`}>Program *</label>
-              <select
-                id={`member-${index}-program`}
-                name="program"
-                value={member.program}
-                onChange={(e) => handleMemberField(index, e)}
-                required
-              >
-                <option value="">Select program</option>
-                {PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-          </div>
+          <MemberGrid
+            prefix={`member-${index}`}
+            values={member}
+            onChange={(e) => handleMemberField(index, e)}
+          />
         </div>
       ))}
 
       {canAddMore && (
         <button type="button" className="btn-add-member" onClick={addMember} style={{ '--member-color': color }}>
           + Add member
-          <span className="btn-add-member__count">
-            {1 + members.length} / {teamSize.max}
-          </span>
+          <span className="btn-add-member__count">{1 + members.length} / {teamSize.max}</span>
         </button>
       )}
 
-      {error && (
-        <div className="alert alert--error" role="alert">{error}</div>
-      )}
+      {error && <div className="alert alert--error" role="alert">{error}</div>}
 
       <div className="form-actions">
-        <p className="form-actions__note">
-          * Required fields. Only the team leader submits once.
-        </p>
+        <p className="form-actions__note">* Required fields. Only the team leader submits once.</p>
         <button
-          type="submit"
-          className="btn btn--primary"
+          type="submit" className="btn btn--primary"
           disabled={status === 'submitting'}
           style={{ background: color, borderColor: color }}
         >
