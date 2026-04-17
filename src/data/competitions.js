@@ -108,7 +108,7 @@ export const COMPETITIONS = [
     image: 'game-jam.jpg',
     description: 'Build a game from scratch as a team within the jam period.',
     type: 'team',
-    teamSize: { min: 3, max: 8 },
+    teamSize: { min: 3, max: 6 },
     slots: null,
     registrationOpen: true,
     topics: [],
