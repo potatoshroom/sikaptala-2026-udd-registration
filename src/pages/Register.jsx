@@ -29,6 +29,7 @@ export default function Register() {
   const isHovered = useRef(false)
   const dragStartX = useRef(0)
   const dragScrollLeft = useRef(0)
+  const touchCooldown = useRef(null)
 
   // Auto-scroll via rAF; pauses while dragging or hovering
   useEffect(() => {
@@ -39,8 +40,11 @@ export default function Register() {
       const el = carouselRef.current
       if (el) {
         if (!isDragging.current && !isHovered.current) {
+          const half = el.scrollWidth / 2
+          // Sync on first tick after drag ends (momentum may have crossed the boundary)
+          scrollPos = scrollPos % half
           scrollPos += 0.4
-          if (scrollPos >= el.scrollWidth / 2) scrollPos = 0
+          if (scrollPos >= half) scrollPos -= half
           el.scrollLeft = scrollPos
         } else {
           // Keep accumulator in sync so resume doesn't snap
@@ -50,7 +54,10 @@ export default function Register() {
       frame = requestAnimationFrame(tick)
     }
     frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(touchCooldown.current)
+    }
   }, [viewMode])
 
   function onMouseDown(e) {
@@ -77,11 +84,16 @@ export default function Register() {
   }
 
   function onTouchStart() {
+    clearTimeout(touchCooldown.current)
     isDragging.current = true
   }
 
   function onTouchEnd() {
-    isDragging.current = false
+    // Delay re-enabling auto-scroll so browser momentum scroll can finish
+    // without the rAF loop fighting it
+    touchCooldown.current = setTimeout(() => {
+      isDragging.current = false
+    }, 800)
   }
 
   useEffect(() => {
@@ -130,14 +142,14 @@ export default function Register() {
             students who make the final roster will have all competition expenses{' '}
             <strong>fully covered by the university.</strong>
           </p>
-          <a
+          {/* <a
             href="https://canva.link/7de8v2ub1i7749w"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn--guidelines"
           >
             View SIKAPTALA 2026 Official Guidelines (DLSU-D) ↗
-          </a>
+          </a> */}
         </div>
       </div>
 

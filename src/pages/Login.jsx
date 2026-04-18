@@ -61,7 +61,7 @@ export default function Login() {
             <strong>fully covered and subsidized</strong> by the university.
           </p>
 
-          <div className="landing-hero__cta-box">
+          {/* <div className="landing-hero__cta-box">
             <p className="landing-hero__cta-label">Before you apply</p>
             <p className="landing-hero__cta-text">
               Read the official event mechanics, categories, and guidelines thoroughly
@@ -75,7 +75,7 @@ export default function Login() {
             >
               View SIKAPTALA 2026 Official Guidelines (DLSU-D) ↗
             </a>
-          </div>
+          </div> */}
 
           <p className="landing-hero__footer">
             Universidad de Dagupan · School of Information Technology Education
