@@ -104,7 +104,7 @@ export const COMPETITIONS = [
     colorDark: '#0E7490',
     image: 'research.jpg',
     description: 'Oral research presentation competition.',
-    type: 'individual',
+    type: 'team',
     slots: null,
     registrationOpen: false,
     registrationType: 'adviser',

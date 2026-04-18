@@ -303,7 +303,9 @@ function CompCard({ comp, route, base }) {
           <span className="comp-card__type">
             {comp.type === 'individual'
               ? 'Individual'
-              : `Team · ${formatTeamSize(comp.teamSize)} members`}
+              : comp.teamSize
+              ? `Team · ${formatTeamSize(comp.teamSize)} members`
+              : 'Team'}
           </span>
         )}
         {comp.adviserNote && (
