@@ -140,7 +140,10 @@ export default function Register() {
             DLSU-D is hosting <strong>SIKAPTALA 2026</strong>, and we are looking for Universidad de Dagupan's
             finest to carry our banner. This portal is the official internal screening —
             students who make the final roster will have all competition expenses{' '}
-            <strong>fully covered by the university.</strong>
+            <strong>fully covered by the university</strong>, and will receive{' '}
+            <strong>review sessions and coaching</strong> from SITE faculty members.
+            Official representatives may also receive classwork incentives or
+            exemptions in related courses <em>based on their performance</em>.
           </p>
           {/* <a
             href="https://canva.link/7de8v2ub1i7749w"

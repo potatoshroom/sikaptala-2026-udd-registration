@@ -58,7 +58,10 @@ export default function Login() {
           <p className="landing-hero__body">
             This portal is our official internal screening. Students who make the final
             roster will have all competition-related expenses{' '}
-            <strong>fully covered and subsidized</strong> by the university.
+            <strong>fully covered and subsidized</strong> by the university, and will
+            receive <strong>review sessions and coaching</strong> from SITE faculty members.
+            Official representatives may also receive classwork incentives or
+            exemptions in related courses <em>based on their performance</em>.
           </p>
 
           {/* <div className="landing-hero__cta-box">
