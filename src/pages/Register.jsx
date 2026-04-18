@@ -136,7 +136,7 @@ export default function Register() {
             rel="noopener noreferrer"
             className="btn btn--guidelines"
           >
-            View Official Guidelines ↗
+            View SIKAPTALA 2026 Official Guidelines (DLSU-D) ↗
           </a>
         </div>
       </div>

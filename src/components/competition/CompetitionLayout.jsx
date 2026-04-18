@@ -1,12 +1,20 @@
 import { signOut } from 'firebase/auth'
 import { useNavigate, Link } from 'react-router-dom'
 import { auth } from '../../firebase'
+import { formatTeamSize } from '../../data/competitions'
 
 const BASE = import.meta.env.BASE_URL
 
 export default function CompetitionLayout({ competition, user, children, infoChildren, headerChildren }) {
   const navigate = useNavigate()
-  const { name, color, colorDark, image } = competition
+  const { name, color, colorDark, image, type, teamSize } = competition
+
+  const typeLabel =
+    type === 'individual'
+      ? 'Individual'
+      : teamSize
+      ? `Team · ${formatTeamSize(teamSize)} members`
+      : 'Team'
 
   async function handleSignOut() {
     await signOut(auth)
@@ -41,6 +49,7 @@ export default function CompetitionLayout({ competition, user, children, infoChi
         <div className="comp-banner__inner">
           <p className="comp-banner__event">SIKAPTALA 2026</p>
           <h1 className="comp-banner__title">{name}</h1>
+          <span className="comp-banner__type-badge">{typeLabel}</span>
           {headerChildren}
         </div>
       </header>
