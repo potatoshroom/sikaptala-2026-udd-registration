@@ -1,7 +1,8 @@
 {
   "projects": {
     "default": "skptl-2026-udd",
-    "skptl-2026-udd-web": "skptl-2026-udd"
+    "skptl-2026-udd-web": "skptl-2026-udd",
+    "mac-web": "skptl-2026-udd"
   },
   "targets": {},
   "etags": {}

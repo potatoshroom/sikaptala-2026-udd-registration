@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { getDoc, doc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
 import { COMPETITIONS, formatTeamSize } from '../data/competitions'
 
 const BASE = import.meta.env.BASE_URL
@@ -20,6 +21,8 @@ export default function Register() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [viewMode, setViewMode] = useState('carousel')
+  const [myRegistrations, setMyRegistrations] = useState([])
+  const [regsLoading, setRegsLoading] = useState(true)
 
   const carouselRef = useRef(null)
   const isDragging = useRef(false)
@@ -82,7 +85,18 @@ export default function Register() {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u))
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setUser(u)
+      if (!u) { setRegsLoading(false); return }
+      const results = await Promise.all(
+        COMPETITIONS.map(async (comp) => {
+          const snap = await getDoc(doc(db, 'registrations', comp.id, 'entries', u.uid))
+          return snap.exists() ? { comp, data: snap.data() } : null
+        })
+      )
+      setMyRegistrations(results.filter(Boolean))
+      setRegsLoading(false)
+    })
     return unsubscribe
   }, [])
 
@@ -126,6 +140,27 @@ export default function Register() {
           </a>
         </div>
       </div>
+
+      {/* ── My Registrations ── */}
+      {(regsLoading || myRegistrations.length > 0) && (
+        <div className="my-regs-section">
+          <h2 className="competitions-section-title">My Registrations</h2>
+          {regsLoading ? (
+            <p className="my-regs__loading">Checking registrations…</p>
+          ) : (
+            <div className="my-regs-list">
+              {myRegistrations.map(({ comp, data }) => (
+                <MyRegRow
+                  key={comp.id}
+                  comp={comp}
+                  data={data}
+                  route={COMPETITION_ROUTES[comp.id]}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Section heading ── */}
       <div className="register-body">
@@ -189,6 +224,34 @@ export default function Register() {
       )}
 
       <div style={{ paddingBottom: '5rem' }} />
+    </div>
+  )
+}
+
+function MyRegRow({ comp, data, route }) {
+  const statusConfig = {
+    pending:  { label: 'Pending',  cls: 'my-reg-badge--pending' },
+    approved: { label: 'Approved', cls: 'my-reg-badge--approved' },
+    denied:   { label: 'Denied',   cls: 'my-reg-badge--denied' },
+  }
+  const { label, cls } = statusConfig[data.status] ?? statusConfig.pending
+
+  return (
+    <div className="my-reg-row" style={{ '--reg-color': comp.color }}>
+      <div className="my-reg-row__accent" />
+      <div className="my-reg-row__info">
+        <span className="my-reg-row__name">{comp.name}</span>
+        {data.teamName && (
+          <span className="my-reg-row__team">{data.teamName}</span>
+        )}
+      </div>
+      {comp.tryout?.sessions?.[0]?.date && (
+        <span className="my-reg-row__dates">{comp.tryout.sessions[0].date}</span>
+      )}
+      <span className={`my-reg-badge ${cls}`}>{label}</span>
+      {route && (
+        <Link to={route} className="my-reg-row__link">View →</Link>
+      )}
     </div>
   )
 }

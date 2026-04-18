@@ -4,19 +4,23 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
 import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
+import { buildFullName } from '../../utils/nameUtils'
 
 export default function IndividualRegistrationForm({ competition, onUserLoad }) {
   const navigate = useNavigate()
   const { id: competitionId, name: competitionName, color } = competition
 
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
   const [regStatus, setRegStatus] = useState('pending')
   const [denialReason, setDenialReason] = useState(null)
 
   const [form, setForm] = useState({
-    name: '',
+    lastName: '',
+    firstName: '',
+    middleName: '',
     studentId: '',
     yearLevel: '',
     program: '',
@@ -31,16 +35,39 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
       if (!u) return
       setUser(u)
       onUserLoad?.(u)
-      setForm((prev) => ({ ...prev, email: u.email }))
-      const ref = doc(db, 'registrations', competitionId, 'entries', u.uid)
-      const snap = await getDoc(ref)
-      if (snap.exists()) {
-        const data = snap.data()
+
+      const [regSnap, profileSnap] = await Promise.all([
+        getDoc(doc(db, 'registrations', competitionId, 'entries', u.uid)),
+        getDoc(doc(db, 'profiles', u.uid)),
+      ])
+
+      if (regSnap.exists()) {
+        const data = regSnap.data()
         setRegStatus(data.status || 'pending')
         setDenialReason(data.denialReason || null)
         setStatus('already-registered')
       } else {
         setStatus('idle')
+      }
+
+      if (profileSnap.exists()) {
+        const p = profileSnap.data()
+        setProfile(p)
+        setForm((prev) => ({
+          ...prev,
+          lastName: p.lastName,
+          firstName: p.firstName,
+          middleName: p.middleName || '',
+          studentId: p.studentId,
+          yearLevel: p.yearLevel,
+          program: p.program,
+          major: p.major || '',
+          block: p.block,
+          facebookLink: p.facebookLink.replace('https://www.facebook.com/', ''),
+          email: u.email,
+        }))
+      } else {
+        setForm((prev) => ({ ...prev, email: u.email }))
       }
     })
     return unsubscribe
@@ -64,7 +91,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
     const RE_STUDENT_ID = /^\d{2}-\d{4}-\d{3}$/
     const majors = getMajors(form.yearLevel, form.program)
 
-    if (!form.name.trim() || !form.studentId.trim() || !form.yearLevel || !form.program || !form.block || !form.facebookLink.trim()) {
+    if (!form.lastName.trim() || !form.firstName.trim() || !form.studentId.trim() || !form.yearLevel || !form.program || !form.block || !form.facebookLink.trim()) {
       setError('Please fill in all required fields.'); return
     }
     if (majors && !form.major) {
@@ -76,13 +103,14 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
 
     const cleanFbPath = form.facebookLink.trim().split('?')[0].replace(/#.*$/, '')
     const facebookLink = `https://www.facebook.com/${cleanFbPath}`
+    const fullName = buildFullName(form.lastName, form.firstName, form.middleName)
 
     setStatus('submitting')
     try {
-      const data = {
+      const regData = {
         uid: user.uid,
         competitionId,
-        name: form.name.trim(),
+        name: fullName,
         studentId: form.studentId.trim(),
         yearLevel: form.yearLevel,
         program: form.program,
@@ -92,9 +120,27 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         status: 'pending',
         submittedAt: serverTimestamp(),
       }
-      if (majors) data.major = form.major
+      if (majors) regData.major = form.major
 
-      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), data)
+      const writes = [setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), regData)]
+
+      if (!profile) {
+        const profileData = {
+          lastName: form.lastName.trim(),
+          firstName: form.firstName.trim(),
+          middleName: form.middleName.trim(),
+          studentId: form.studentId.trim(),
+          yearLevel: form.yearLevel,
+          program: form.program,
+          block: form.block,
+          facebookLink,
+          createdAt: serverTimestamp(),
+        }
+        if (majors) profileData.major = form.major
+        writes.push(setDoc(doc(db, 'profiles', user.uid), profileData))
+      }
+
+      await Promise.all(writes)
       navigate('/success', { state: { competitionName } })
     } catch (err) {
       console.error(err)
@@ -150,21 +196,62 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
 
   const majors = getMajors(form.yearLevel, form.program)
   const blocks = getBlocks(form.yearLevel, form.program, form.major)
+  const locked = !!profile
 
   return (
     <form className="reg-form" onSubmit={handleSubmit} noValidate>
       <h2 className="reg-form__title">Registration Form</h2>
       <p className="reg-form__subtitle">Individual entry — one submission per student.</p>
 
+      {locked ? (
+        <div className="profile-locked-notice">
+          <i className="bi bi-lock-fill profile-locked-notice__icon" />
+          <span>Your profile details are locked and reused across all your registrations.</span>
+        </div>
+      ) : (
+        <div className="profile-first-notice">
+          <i className="bi bi-info-circle profile-first-notice__icon" />
+          <span>Your name, student ID, year, program, block, and Facebook profile will be saved and automatically filled in for your other registrations.</span>
+        </div>
+      )}
+
       <div className="form-grid">
-        <div className="form-field form-field--full">
-          <label htmlFor="name">Full Name *</label>
+        <div className="form-field">
+          <label htmlFor="lastName">Last Name *</label>
           <input
-            id="name" name="name" type="text"
-            value={form.name} onChange={handleField}
-            placeholder="Last Name, First Name M.I."
-            required maxLength={100}
+            id="lastName" name="lastName" type="text"
+            value={form.lastName} onChange={handleField}
+            placeholder="e.g. Dela Cruz"
+            required maxLength={60}
+            readOnly={locked} className={locked ? 'input--readonly' : ''}
           />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="firstName">First Name *</label>
+          <input
+            id="firstName" name="firstName" type="text"
+            value={form.firstName} onChange={handleField}
+            placeholder="e.g. Juan"
+            required maxLength={60}
+            readOnly={locked} className={locked ? 'input--readonly' : ''}
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="middleName">
+            Middle Name <span className="form-field__optional">(optional)</span>
+          </label>
+          <input
+            id="middleName" name="middleName" type="text"
+            value={form.middleName} onChange={handleField}
+            placeholder="e.g. Santos"
+            maxLength={60}
+            readOnly={locked} className={locked ? 'input--readonly' : ''}
+          />
+          {!locked && (
+            <span className="form-field__hint">Only your middle initial will be used (e.g. "S.").</span>
+          )}
         </div>
 
         <div className="form-field">
@@ -174,12 +261,13 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
             value={form.studentId} onChange={handleField}
             placeholder="e.g. 12-3456-789"
             required maxLength={11}
+            readOnly={locked} className={locked ? 'input--readonly' : ''}
           />
         </div>
 
         <div className="form-field">
           <label htmlFor="yearLevel">Year Level *</label>
-          <select id="yearLevel" name="yearLevel" value={form.yearLevel} onChange={handleField} required>
+          <select id="yearLevel" name="yearLevel" value={form.yearLevel} onChange={handleField} required disabled={locked}>
             <option value="">Select year level</option>
             {YEAR_LEVELS.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -187,7 +275,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
 
         <div className="form-field">
           <label htmlFor="program">Program *</label>
-          <select id="program" name="program" value={form.program} onChange={handleField} required disabled={!form.yearLevel}>
+          <select id="program" name="program" value={form.program} onChange={handleField} required disabled={locked || !form.yearLevel}>
             <option value="">Select program</option>
             {form.yearLevel && PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
@@ -196,7 +284,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         {majors && (
           <div className="form-field">
             <label htmlFor="major">Major *</label>
-            <select id="major" name="major" value={form.major} onChange={handleField} required>
+            <select id="major" name="major" value={form.major} onChange={handleField} required disabled={locked}>
               <option value="">Select major</option>
               {majors.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
@@ -205,13 +293,15 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
 
         <div className="form-field">
           <label htmlFor="block">Block *</label>
-          <select id="block" name="block" value={form.block} onChange={handleField} required disabled={blocks.length === 0}>
+          <select id="block" name="block" value={form.block} onChange={handleField} required disabled={locked || blocks.length === 0}>
             <option value="">Select block</option>
             {blocks.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
-          <span className="form-field__hint">
-            If you are irregular, select the block where you have the most major subjects enrolled in.
-          </span>
+          {!locked && (
+            <span className="form-field__hint">
+              If you are irregular, select the block where you have the most major subjects enrolled in.
+            </span>
+          )}
         </div>
 
         <div className="form-field form-field--full">
@@ -223,6 +313,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
               value={form.facebookLink} onChange={handleField}
               placeholder="yourprofile"
               required maxLength={200}
+              readOnly={locked} className={locked ? 'input--readonly' : ''}
             />
           </div>
         </div>

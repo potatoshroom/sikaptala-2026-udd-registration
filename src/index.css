@@ -1087,6 +1087,46 @@ a { color: var(--color-primary); }
 .reg-form__subtitle { font-size: 0.82rem; color: var(--color-text-muted); margin-top: -0.75rem; font-weight: 500; }
 .reg-form-loading { font-size: 0.9rem; color: var(--color-text-muted); padding: 2rem; text-align: center; font-weight: 500; }
 
+/* Profile notices (lock / first-time) */
+.profile-locked-notice,
+.profile-first-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.profile-locked-notice {
+  background: rgba(91,124,250,0.07);
+  border: 1px solid rgba(91,124,250,0.2);
+  border-left: 3px solid var(--color-primary);
+  box-shadow: 0 0 16px rgba(91,124,250,0.05);
+}
+
+.profile-first-notice {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 3px solid rgba(255,255,255,0.15);
+}
+
+.profile-locked-notice__icon { color: var(--color-primary); flex-shrink: 0; margin-top: 0.1rem; }
+.profile-first-notice__icon  { color: var(--color-text-muted); flex-shrink: 0; margin-top: 0.1rem; }
+
+/* Optional field label */
+.form-field__optional {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(139,144,168,0.55);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 0.15rem;
+}
+
 .reg-already {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
@@ -1236,3 +1276,136 @@ a { color: var(--color-primary); }
 }
 
 .comp-form-col { width: 100%; }
+
+/* =========================================================
+   My Registrations (home page)
+   ========================================================= */
+.my-regs-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 0;
+  width: 100%;
+}
+
+.my-regs__loading {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  padding: 0.5rem 0;
+}
+
+.my-regs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.my-reg-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.2rem;
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.my-reg-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--reg-color);
+  box-shadow: 0 0 12px var(--reg-color);
+}
+
+.my-reg-row:hover {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--reg-color) 10%, transparent), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.my-reg-row__info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.my-reg-row__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.my-reg-row__team {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.my-reg-row__dates {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.my-reg-badge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  flex-shrink: 0;
+}
+
+.my-reg-badge--pending {
+  background: rgba(245,158,11,0.12);
+  color: var(--color-warning);
+  box-shadow: 0 0 10px rgba(245,158,11,0.15);
+}
+
+.my-reg-badge--approved {
+  background: rgba(34,197,94,0.12);
+  color: var(--color-success);
+  box-shadow: 0 0 10px rgba(34,197,94,0.18);
+}
+
+.my-reg-badge--denied {
+  background: rgba(239,68,68,0.1);
+  color: #fca5a5;
+  box-shadow: 0 0 10px rgba(239,68,68,0.12);
+}
+
+.my-reg-row__link {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.my-reg-row__link:hover {
+  color: var(--color-text);
+}
+
+@media (max-width: 560px) {
+  .my-reg-row__dates { display: none; }
+  .my-reg-row__info { flex-direction: column; align-items: flex-start; gap: 0.15rem; }
+}

@@ -5,20 +5,47 @@ import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
 import { resolveTeamSize, formatTeamSize } from '../../data/competitions'
 import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
+import { buildFullName } from '../../utils/nameUtils'
 
-function MemberGrid({ prefix, values, onChange, showEmail, email }) {
+function MemberGrid({ prefix, values, onChange, showEmail, email, locked }) {
   const majors = getMajors(values.yearLevel, values.program)
   const blocks = getBlocks(values.yearLevel, values.program, values.major)
   return (
     <div className="form-grid">
-      <div className="form-field form-field--full">
-        <label htmlFor={`${prefix}-name`}>Full Name *</label>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-lastName`}>Last Name *</label>
         <input
-          id={`${prefix}-name`} name="name" type="text"
-          value={values.name} onChange={onChange}
-          placeholder="Last Name, First Name M.I."
-          required maxLength={100}
+          id={`${prefix}-lastName`} name="lastName" type="text"
+          value={values.lastName} onChange={onChange}
+          placeholder="e.g. Dela Cruz"
+          required maxLength={60}
+          readOnly={locked} className={locked ? 'input--readonly' : ''}
         />
+      </div>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-firstName`}>First Name *</label>
+        <input
+          id={`${prefix}-firstName`} name="firstName" type="text"
+          value={values.firstName} onChange={onChange}
+          placeholder="e.g. Juan"
+          required maxLength={60}
+          readOnly={locked} className={locked ? 'input--readonly' : ''}
+        />
+      </div>
+      <div className="form-field">
+        <label htmlFor={`${prefix}-middleName`}>
+          Middle Name <span className="form-field__optional">(optional)</span>
+        </label>
+        <input
+          id={`${prefix}-middleName`} name="middleName" type="text"
+          value={values.middleName} onChange={onChange}
+          placeholder="e.g. Santos"
+          maxLength={60}
+          readOnly={locked} className={locked ? 'input--readonly' : ''}
+        />
+        {!locked && (
+          <span className="form-field__hint">Only your middle initial will be used (e.g. "S.").</span>
+        )}
       </div>
       <div className="form-field">
         <label htmlFor={`${prefix}-studentId`}>Student ID *</label>
@@ -27,18 +54,19 @@ function MemberGrid({ prefix, values, onChange, showEmail, email }) {
           value={values.studentId} onChange={onChange}
           placeholder="e.g. 12-3456-789"
           required maxLength={11}
+          readOnly={locked} className={locked ? 'input--readonly' : ''}
         />
       </div>
       <div className="form-field">
         <label htmlFor={`${prefix}-yearLevel`}>Year Level *</label>
-        <select id={`${prefix}-yearLevel`} name="yearLevel" value={values.yearLevel} onChange={onChange} required>
+        <select id={`${prefix}-yearLevel`} name="yearLevel" value={values.yearLevel} onChange={onChange} required disabled={locked}>
           <option value="">Select year level</option>
           {YEAR_LEVELS.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
       <div className="form-field">
         <label htmlFor={`${prefix}-program`}>Program *</label>
-        <select id={`${prefix}-program`} name="program" value={values.program} onChange={onChange} required disabled={!values.yearLevel}>
+        <select id={`${prefix}-program`} name="program" value={values.program} onChange={onChange} required disabled={locked || !values.yearLevel}>
           <option value="">Select program</option>
           {values.yearLevel && PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
@@ -46,7 +74,7 @@ function MemberGrid({ prefix, values, onChange, showEmail, email }) {
       {majors && (
         <div className="form-field">
           <label htmlFor={`${prefix}-major`}>Major *</label>
-          <select id={`${prefix}-major`} name="major" value={values.major} onChange={onChange} required>
+          <select id={`${prefix}-major`} name="major" value={values.major} onChange={onChange} required disabled={locked}>
             <option value="">Select major</option>
             {majors.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
@@ -54,13 +82,15 @@ function MemberGrid({ prefix, values, onChange, showEmail, email }) {
       )}
       <div className="form-field">
         <label htmlFor={`${prefix}-block`}>Block *</label>
-        <select id={`${prefix}-block`} name="block" value={values.block} onChange={onChange} required disabled={blocks.length === 0}>
+        <select id={`${prefix}-block`} name="block" value={values.block} onChange={onChange} required disabled={locked || blocks.length === 0}>
           <option value="">Select block</option>
           {blocks.map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
-        <span className="form-field__hint">
-          If you are irregular, select the block where you have the most major subjects enrolled in.
-        </span>
+        {!locked && (
+          <span className="form-field__hint">
+            If you are irregular, select the block where you have the most major subjects enrolled in.
+          </span>
+        )}
       </div>
       <div className="form-field form-field--full">
         <label htmlFor={`${prefix}-facebookLink`}>Facebook Profile *</label>
@@ -71,6 +101,7 @@ function MemberGrid({ prefix, values, onChange, showEmail, email }) {
             value={values.facebookLink} onChange={onChange}
             placeholder="yourprofile"
             required maxLength={200}
+            readOnly={locked} className={locked ? 'input--readonly' : ''}
           />
         </div>
       </div>
@@ -89,7 +120,7 @@ function MemberGrid({ prefix, values, onChange, showEmail, email }) {
 }
 
 function emptyMember() {
-  return { name: '', studentId: '', yearLevel: '', program: '', major: '', block: '', facebookLink: '' }
+  return { lastName: '', firstName: '', middleName: '', studentId: '', yearLevel: '', program: '', major: '', block: '', facebookLink: '' }
 }
 
 function cascadeReset(prev, name, value) {
@@ -113,6 +144,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const maxAdditional = teamSize.max - 1
 
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
   const [regStatus, setRegStatus] = useState('pending')
@@ -131,15 +163,35 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
       setUser(u)
       handleUserLoad?.(u)
       setLeaderEmail(u.email)
-      const ref = doc(db, 'registrations', competitionId, 'entries', u.uid)
-      const snap = await getDoc(ref)
-      if (snap.exists()) {
-        const data = snap.data()
+
+      const [regSnap, profileSnap] = await Promise.all([
+        getDoc(doc(db, 'registrations', competitionId, 'entries', u.uid)),
+        getDoc(doc(db, 'profiles', u.uid)),
+      ])
+
+      if (regSnap.exists()) {
+        const data = regSnap.data()
         setRegStatus(data.status || 'pending')
         setDenialReason(data.denialReason || null)
         setStatus('already-registered')
       } else {
         setStatus('idle')
+      }
+
+      if (profileSnap.exists()) {
+        const p = profileSnap.data()
+        setProfile(p)
+        setLeader({
+          lastName: p.lastName,
+          firstName: p.firstName,
+          middleName: p.middleName || '',
+          studentId: p.studentId,
+          yearLevel: p.yearLevel,
+          program: p.program,
+          major: p.major || '',
+          block: p.block,
+          facebookLink: p.facebookLink.replace('https://www.facebook.com/', ''),
+        })
       }
     })
     return unsubscribe
@@ -174,7 +226,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
 
     const leaderMajors = getMajors(leader.yearLevel, leader.program)
-    if (!leader.name.trim() || !leader.studentId.trim() || !leader.yearLevel || !leader.program || !leader.block || !leader.facebookLink.trim()) {
+    if (!leader.lastName.trim() || !leader.firstName.trim() || !leader.studentId.trim() || !leader.yearLevel || !leader.program || !leader.block || !leader.facebookLink.trim()) {
       setError('Please complete all team leader fields.'); return
     }
     if (leaderMajors && !leader.major) {
@@ -187,7 +239,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     for (let i = 0; i < members.length; i++) {
       const m = members[i]
       const mMajors = getMajors(m.yearLevel, m.program)
-      if (!m.name.trim() || !m.studentId.trim() || !m.yearLevel || !m.program || !m.block || !m.facebookLink.trim()) {
+      if (!m.lastName.trim() || !m.firstName.trim() || !m.studentId.trim() || !m.yearLevel || !m.program || !m.block || !m.facebookLink.trim()) {
         setError(`Please complete all fields for Member ${i + 2}.`); return
       }
       if (mMajors && !m.major) {
@@ -206,20 +258,21 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     setStatus('submitting')
     try {
       const buildMember = (m, email) => {
+        const fbUrl = `https://www.facebook.com/${m.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
         const out = {
-          name: m.name.trim(),
+          name: buildFullName(m.lastName, m.firstName, m.middleName),
           studentId: m.studentId.trim(),
           yearLevel: m.yearLevel,
           program: m.program,
           block: m.block,
+          facebookLink: fbUrl,
         }
         if (getMajors(m.yearLevel, m.program)) out.major = m.major
-        out.facebookLink = `https://www.facebook.com/${m.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
         if (email != null) out.email = email
         return out
       }
 
-      await setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), {
+      const regData = {
         uid: user.uid,
         competitionId,
         teamName: teamName.trim(),
@@ -228,7 +281,28 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         totalMembers,
         status: 'pending',
         submittedAt: serverTimestamp(),
-      })
+      }
+
+      const writes = [setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), regData)]
+
+      if (!profile) {
+        const leaderFbUrl = `https://www.facebook.com/${leader.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
+        const profileData = {
+          lastName: leader.lastName.trim(),
+          firstName: leader.firstName.trim(),
+          middleName: leader.middleName.trim(),
+          studentId: leader.studentId.trim(),
+          yearLevel: leader.yearLevel,
+          program: leader.program,
+          block: leader.block,
+          facebookLink: leaderFbUrl,
+          createdAt: serverTimestamp(),
+        }
+        if (leaderMajors) profileData.major = leader.major
+        writes.push(setDoc(doc(db, 'profiles', user.uid), profileData))
+      }
+
+      await Promise.all(writes)
       navigate('/success', { state: { competitionName } })
     } catch (err) {
       console.error(err)
@@ -284,6 +358,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
   const canAddMore = members.length < maxAdditional
   const canRemove = members.length > minAdditional
+  const leaderLocked = !!profile
 
   return (
     <form className="reg-form" onSubmit={handleSubmit} noValidate>
@@ -304,7 +379,25 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
 
       <div className="team-member-block team-member-block--leader" style={{ '--member-color': color }}>
         <p className="team-member-block__label">Member 1 — Team Leader (You)</p>
-        <MemberGrid prefix="leader" values={leader} onChange={handleLeaderField} showEmail email={leaderEmail} />
+        {leaderLocked ? (
+          <div className="profile-locked-notice">
+            <i className="bi bi-lock-fill profile-locked-notice__icon" />
+            <span>Your profile details are locked and reused across all your registrations.</span>
+          </div>
+        ) : (
+          <div className="profile-first-notice">
+            <i className="bi bi-info-circle profile-first-notice__icon" />
+            <span>Your details will be saved and automatically filled in for your other registrations.</span>
+          </div>
+        )}
+        <MemberGrid
+          prefix="leader"
+          values={leader}
+          onChange={handleLeaderField}
+          showEmail
+          email={leaderEmail}
+          locked={leaderLocked}
+        />
       </div>
 
       {members.map((member, index) => (

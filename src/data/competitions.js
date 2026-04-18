@@ -7,7 +7,6 @@ export const COMPETITIONS = [
   {
     id: 'quiz-bee',
     name: 'CS & IT Quiz Bee',
-    dates: 'May 11 & 13',
     platform: 'Slido',
     color: '#F5C518',
     colorDark: '#B8940F',
@@ -42,7 +41,6 @@ export const COMPETITIONS = [
   {
     id: 'skills',
     name: 'CS & IT Skills Competition',
-    dates: 'May 14–15',
     platform: '-',
     color: '#7C3AED',
     colorDark: '#5B21B6',
@@ -76,7 +74,6 @@ export const COMPETITIONS = [
   {
     id: 'web-design',
     name: 'Web Design Competition',
-    dates: 'May 11',
     platform: 'Figma',
     color: '#E85D04',
     colorDark: '#B84300',
@@ -102,7 +99,6 @@ export const COMPETITIONS = [
   {
     id: 'oral-research',
     name: 'Oral Research Competition',
-    dates: 'May 12–15',
     platform: 'MS Teams',
     color: '#0891B2',
     colorDark: '#0E7490',
@@ -119,7 +115,6 @@ export const COMPETITIONS = [
   {
     id: 'game-jam',
     name: 'Game Jam Competition',
-    dates: 'May 11–14',
     platform: 'itch.io',
     color: '#16A34A',
     colorDark: '#15803D',
@@ -144,7 +139,6 @@ export const COMPETITIONS = [
   {
     id: 'hackathon',
     name: 'Hackathon Competition',
-    dates: 'May 11–14',
     platform: 'MS Teams',
     color: '#DC2626',
     colorDark: '#B91C1C',
