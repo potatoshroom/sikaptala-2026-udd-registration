@@ -4,7 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
 import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
-import { buildFullName } from '../../utils/nameUtils'
+import { buildFullName, extractFbUsername } from '../../utils/nameUtils'
 
 export default function IndividualRegistrationForm({ competition, onUserLoad }) {
   const navigate = useNavigate()
@@ -63,7 +63,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
           program: p.program,
           major: p.major || '',
           block: p.block,
-          facebookLink: p.facebookLink.replace('https://www.facebook.com/', ''),
+          facebookLink: extractFbUsername(p.facebookLink),
           email: u.email,
         }))
       } else {
@@ -84,6 +84,10 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
     })
   }
 
+  function handleFbBlur() {
+    setForm((prev) => ({ ...prev, facebookLink: extractFbUsername(prev.facebookLink) }))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
@@ -101,8 +105,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
       setError('Student ID must follow the format: 12-3456-789.'); return
     }
 
-    const cleanFbPath = form.facebookLink.trim().split('?')[0].replace(/#.*$/, '')
-    const facebookLink = `https://www.facebook.com/${cleanFbPath}`
+    const facebookLink = `https://www.facebook.com/${extractFbUsername(form.facebookLink)}`
     const fullName = buildFullName(form.lastName, form.firstName, form.middleName)
 
     setStatus('submitting')
@@ -310,12 +313,15 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
             <span className="input-group__prefix">facebook.com/</span>
             <input
               id="facebookLink" name="facebookLink" type="text"
-              value={form.facebookLink} onChange={handleField}
+              value={form.facebookLink} onChange={handleField} onBlur={handleFbBlur}
               placeholder="yourprofile"
               required maxLength={200}
               readOnly={locked} className={locked ? 'input--readonly' : ''}
             />
           </div>
+          {!locked && (
+            <span className="form-field__hint">Enter only your username (e.g. sch.123), not the full URL.</span>
+          )}
         </div>
 
         <div className="form-field form-field--full">

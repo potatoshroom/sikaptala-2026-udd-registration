@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../firebase'
 import { resolveTeamSize, formatTeamSize } from '../../data/competitions'
 import { YEAR_LEVELS, PROGRAMS, getMajors, getBlocks } from '../../data/curriculum'
-import { buildFullName } from '../../utils/nameUtils'
+import { buildFullName, extractFbUsername } from '../../utils/nameUtils'
 
-function MemberGrid({ prefix, values, onChange, showEmail, email, locked }) {
+function MemberGrid({ prefix, values, onChange, onFbBlur, showEmail, email, locked }) {
   const majors = getMajors(values.yearLevel, values.program)
   const blocks = getBlocks(values.yearLevel, values.program, values.major)
   return (
@@ -98,12 +98,15 @@ function MemberGrid({ prefix, values, onChange, showEmail, email, locked }) {
           <span className="input-group__prefix">facebook.com/</span>
           <input
             id={`${prefix}-facebookLink`} name="facebookLink" type="text"
-            value={values.facebookLink} onChange={onChange}
+            value={values.facebookLink} onChange={onChange} onBlur={onFbBlur}
             placeholder="yourprofile"
             required maxLength={200}
             readOnly={locked} className={locked ? 'input--readonly' : ''}
           />
         </div>
+        {!locked && (
+          <span className="form-field__hint">Enter only your username (e.g. sch.123), not the full URL.</span>
+        )}
       </div>
       {showEmail && (
         <div className="form-field">
@@ -190,7 +193,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
           program: p.program,
           major: p.major || '',
           block: p.block,
-          facebookLink: p.facebookLink.replace('https://www.facebook.com/', ''),
+          facebookLink: extractFbUsername(p.facebookLink),
         })
       }
     })
@@ -205,6 +208,14 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   function handleMemberField(index, e) {
     const { name, value } = e.target
     setMembers((prev) => prev.map((m, i) => i === index ? cascadeReset(m, name, value) : m))
+  }
+
+  function handleLeaderFbBlur() {
+    setLeader((prev) => ({ ...prev, facebookLink: extractFbUsername(prev.facebookLink) }))
+  }
+
+  function handleMemberFbBlur(index) {
+    setMembers((prev) => prev.map((m, i) => i === index ? { ...m, facebookLink: extractFbUsername(m.facebookLink) } : m))
   }
 
   function addMember() {
@@ -258,7 +269,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     setStatus('submitting')
     try {
       const buildMember = (m, email) => {
-        const fbUrl = `https://www.facebook.com/${m.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
+        const fbUrl = `https://www.facebook.com/${extractFbUsername(m.facebookLink)}`
         const out = {
           name: buildFullName(m.lastName, m.firstName, m.middleName),
           studentId: m.studentId.trim(),
@@ -286,7 +297,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
       const writes = [setDoc(doc(db, 'registrations', competitionId, 'entries', user.uid), regData)]
 
       if (!profile) {
-        const leaderFbUrl = `https://www.facebook.com/${leader.facebookLink.trim().split('?')[0].replace(/#.*$/, '')}`
+        const leaderFbUrl = `https://www.facebook.com/${extractFbUsername(leader.facebookLink)}`
         const profileData = {
           lastName: leader.lastName.trim(),
           firstName: leader.firstName.trim(),
@@ -394,6 +405,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
           prefix="leader"
           values={leader}
           onChange={handleLeaderField}
+          onFbBlur={handleLeaderFbBlur}
           showEmail
           email={leaderEmail}
           locked={leaderLocked}
@@ -418,6 +430,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
             prefix={`member-${index}`}
             values={member}
             onChange={(e) => handleMemberField(index, e)}
+            onFbBlur={() => handleMemberFbBlur(index)}
           />
         </div>
       ))}
