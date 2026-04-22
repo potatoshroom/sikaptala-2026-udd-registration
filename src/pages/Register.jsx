@@ -20,7 +20,9 @@ const COMPETITION_ROUTES = {
 export default function Register() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
-  const [viewMode, setViewMode] = useState('carousel')
+  const [viewMode, setViewMode] = useState(
+    () => window.matchMedia('(max-width: 768px)').matches ? 'grid' : 'carousel'
+  )
   const [myRegistrations, setMyRegistrations] = useState([])
   const [regsLoading, setRegsLoading] = useState(true)
 

@@ -449,6 +449,10 @@ a { color: var(--color-primary); }
   box-shadow: 0 0 12px rgba(91,124,250,0.2);
 }
 
+@media (max-width: 768px) {
+  .view-toggle { display: none; }
+}
+
 /* Grid layout (restored for grid view) */
 .competitions-grid-cards {
   display: grid;
