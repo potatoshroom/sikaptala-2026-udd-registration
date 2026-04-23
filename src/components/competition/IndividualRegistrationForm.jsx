@@ -16,6 +16,8 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
   const [error, setError] = useState(null)
   const [regStatus, setRegStatus] = useState('pending')
   const [denialReason, setDenialReason] = useState(null)
+  const [regData, setRegData] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
 
   const [form, setForm] = useState({
     lastName: '',
@@ -45,6 +47,7 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         const data = regSnap.data()
         setRegStatus(data.status || 'pending')
         setDenialReason(data.denialReason || null)
+        setRegData(data)
         setStatus('already-registered')
       } else {
         setStatus('idle')
@@ -190,6 +193,38 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
           </div>
         )}
         {error && <div className="alert alert--error" role="alert">{error}</div>}
+        <button
+          type="button"
+          className="btn-details"
+          onClick={() => setShowDetails((v) => !v)}
+        >
+          {showDetails ? 'Hide Registration Details' : 'Show Registration Details'}
+        </button>
+        {showDetails && regData && (
+          <div className="reg-details">
+            <p className="reg-details__label">Submitted Details</p>
+            <div className="reg-details__grid">
+              <RegDetailRow label="Name"       value={regData.name} />
+              <RegDetailRow label="Student ID" value={regData.studentId} />
+              <RegDetailRow label="Year Level" value={regData.yearLevel} />
+              <RegDetailRow label="Program"    value={regData.program} />
+              {regData.major && <RegDetailRow label="Major" value={regData.major} />}
+              <RegDetailRow label="Block"      value={regData.block} />
+              <RegDetailRow label="Email"      value={regData.email} />
+              <RegDetailRow
+                label="Facebook"
+                value={regData.facebookLink}
+                link={regData.facebookLink}
+              />
+              {regData.submittedAt && (
+                <RegDetailRow
+                  label="Submitted"
+                  value={regData.submittedAt.toDate().toLocaleString()}
+                />
+              )}
+            </div>
+          </div>
+        )}
         <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
           Withdraw Registration
         </button>
@@ -347,5 +382,20 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         </button>
       </div>
     </form>
+  )
+}
+
+function RegDetailRow({ label, value, link }) {
+  return (
+    <div className="reg-details__row">
+      <span className="reg-details__key">{label}</span>
+      {link ? (
+        <a href={link} target="_blank" rel="noopener noreferrer" className="reg-details__val reg-details__val--link">
+          {value}
+        </a>
+      ) : (
+        <span className="reg-details__val">{value}</span>
+      )}
+    </div>
   )
 }

@@ -126,6 +126,26 @@ function emptyMember() {
   return { lastName: '', firstName: '', middleName: '', studentId: '', yearLevel: '', program: '', major: '', block: '', facebookLink: '' }
 }
 
+// Converts a stored Firestore member object back to form shape.
+// Name is stored as "LastName, FirstName M." so we parse it back.
+function memberFromFirestore(m) {
+  const [lastName = '', rest = ''] = (m.name ?? '').split(', ')
+  const parts = rest.trim().split(' ')
+  const firstName = parts[0] ?? ''
+  const middleName = parts[1]?.replace(/\.$/, '') ?? ''
+  return {
+    lastName,
+    firstName,
+    middleName,
+    studentId: m.studentId ?? '',
+    yearLevel: m.yearLevel ?? '',
+    program: m.program ?? '',
+    major: m.major ?? '',
+    block: m.block ?? '',
+    facebookLink: extractFbUsername(m.facebookLink ?? ''),
+  }
+}
+
 function cascadeReset(prev, name, value) {
   const next = { ...prev, [name]: value }
   if (name === 'yearLevel') { next.program = ''; next.major = ''; next.block = '' }
@@ -152,6 +172,8 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const [error, setError] = useState(null)
   const [regStatus, setRegStatus] = useState('pending')
   const [denialReason, setDenialReason] = useState(null)
+  const [regData, setRegData] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
 
   const [teamName, setTeamName] = useState('')
   const [leader, setLeader] = useState(emptyMember())
@@ -176,6 +198,7 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         const data = regSnap.data()
         setRegStatus(data.status || 'pending')
         setDenialReason(data.denialReason || null)
+        setRegData(data)
         setStatus('already-registered')
       } else {
         setStatus('idle')
@@ -333,6 +356,12 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
     setStatus('loading')
     try {
       await deleteDoc(doc(db, 'registrations', competitionId, 'entries', user.uid))
+      if (regData) {
+        setTeamName(regData.teamName ?? '')
+        if (regData.members?.length) {
+          setMembers(regData.members.map(memberFromFirestore))
+        }
+      }
       setStatus('idle')
     } catch (err) {
       console.error(err)
@@ -360,6 +389,37 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
           </div>
         )}
         {error && <div className="alert alert--error" role="alert">{error}</div>}
+        <button
+          type="button"
+          className="btn-details"
+          onClick={() => setShowDetails((v) => !v)}
+        >
+          {showDetails ? 'Hide Registration Details' : 'Show Registration Details'}
+        </button>
+        {showDetails && regData && (
+          <div className="reg-details">
+            <p className="reg-details__label">Submitted Details</p>
+            <div className="reg-details__grid">
+              <RegDetailRow label="Team Name" value={regData.teamName} />
+              {regData.submittedAt && (
+                <RegDetailRow
+                  label="Submitted"
+                  value={regData.submittedAt.toDate().toLocaleString()}
+                />
+              )}
+            </div>
+            <p className="reg-details__section">Leader</p>
+            <MemberDetailBlock member={regData.leader} email={regData.leader?.email} />
+            {regData.members?.length > 0 && (
+              <>
+                <p className="reg-details__section">Members</p>
+                {regData.members.map((m, i) => (
+                  <MemberDetailBlock key={i} member={m} index={i + 1} />
+                ))}
+              </>
+            )}
+          </div>
+        )}
         <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
           Withdraw Registration
         </button>
@@ -455,5 +515,41 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         </button>
       </div>
     </form>
+  )
+}
+
+function RegDetailRow({ label, value, link }) {
+  return (
+    <div className="reg-details__row">
+      <span className="reg-details__key">{label}</span>
+      {link ? (
+        <a href={link} target="_blank" rel="noopener noreferrer" className="reg-details__val reg-details__val--link">
+          {value}
+        </a>
+      ) : (
+        <span className="reg-details__val">{value}</span>
+      )}
+    </div>
+  )
+}
+
+function MemberDetailBlock({ member, email, index }) {
+  if (!member) return null
+  return (
+    <div className="reg-details__member">
+      {index != null && <p className="reg-details__member-index">Member {index}</p>}
+      <div className="reg-details__grid">
+        <RegDetailRow label="Name"       value={member.name} />
+        <RegDetailRow label="Student ID" value={member.studentId} />
+        <RegDetailRow label="Year Level" value={member.yearLevel} />
+        <RegDetailRow label="Program"    value={member.program} />
+        {member.major && <RegDetailRow label="Major" value={member.major} />}
+        <RegDetailRow label="Block"      value={member.block} />
+        {email && <RegDetailRow label="Email" value={email} />}
+        {member.facebookLink && (
+          <RegDetailRow label="Facebook" value={member.facebookLink} link={member.facebookLink} />
+        )}
+      </div>
+    </div>
   )
 }
