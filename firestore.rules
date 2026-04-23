@@ -8,11 +8,9 @@ service cloud.firestore {
     // Written once on first registration; never updated or deleted from the client.
     match /profiles/{uid} {
       allow read: if request.auth != null
-                  && request.auth.uid == uid
-                  && isAllowedDomain();
+                  && request.auth.uid == uid;
       allow create: if request.auth != null
                     && request.auth.uid == uid
-                    && isAllowedDomain()
                     && request.resource.data.keys().hasAll(
                          ['lastName', 'firstName', 'studentId', 'yearLevel', 'program', 'block', 'facebookLink', 'createdAt'])
                     && request.resource.data.lastName is string && request.resource.data.lastName.size() > 0
@@ -24,30 +22,30 @@ service cloud.firestore {
     // Path: registrations/{competitionId}/entries/{uid}
     // The document ID is the submitter's Firebase UID.
     match /registrations/{competitionId}/entries/{uid} {
-      allow create: if isAllowedDomain()
+      allow create: if request.auth != null
                     && request.auth.uid == uid
                     && isValidEntry(request.resource.data, competitionId)
                     && !isExclusivityViolation(competitionId, uid);
 
-      // Allow the submitter to read their own entry (for the "already registered" check).
-      // Allow any authenticated UDD/CDD user to read all entries (admin portal).
-      allow read: if isAllowedDomain();
+      // Own entry: any authenticated user can read their own.
+      // All entries: institutional accounts only (admin portal).
+      allow read: if (request.auth != null && request.auth.uid == uid)
+                  || isInstitutional();
 
       // Allow the submitter to delete (withdraw) their own registration.
       allow delete: if request.auth != null
-                    && request.auth.uid == uid
-                    && isAllowedDomain();
+                    && request.auth.uid == uid;
 
-      // Allow any authenticated UDD/CDD user to update status (and optionally denialReason) only.
-      // Note: no admin role exists yet — any UDD/CDD account can technically call this.
-      allow update: if isAllowedDomain()
+      // Allow any institutional UDD/CDD account to update status (and optionally denialReason) only.
+      // Note: no admin role exists yet — any institutional account can technically call this.
+      allow update: if isInstitutional()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'denialReason'])
                     && request.resource.data.status in ['pending', 'approved', 'denied'];
     }
 
   }
 
-  function isAllowedDomain() {
+  function isInstitutional() {
     return request.auth != null
       && (request.auth.token.email.matches('.*@udd\\.edu\\.ph')
           || request.auth.token.email.matches('.*@cdd\\.edu\\.ph'));

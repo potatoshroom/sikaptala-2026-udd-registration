@@ -322,6 +322,44 @@ a { color: var(--color-primary); }
   font-weight: 500;
 }
 
+.login-card__note--priority {
+  color: var(--color-text);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.55rem 0.75rem;
+  line-height: 1.5;
+}
+
+.login-card__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.login-card__divider::before,
+.login-card__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.btn--google--secondary {
+  background: transparent;
+  border-color: rgba(255,255,255,0.08);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+.btn--google--secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+  color: var(--color-text);
+}
+
 /* =========================================================
    Register Page
    ========================================================= */

@@ -8,21 +8,21 @@ const GUIDELINES_URL = 'https://canva.link/7de8v2ub1i7749w'
 
 export default function Login() {
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(null) // 'udd.edu.ph' | 'cdd.edu.ph' | null
+  const [loading, setLoading] = useState(null) // 'udd.edu.ph' | 'cdd.edu.ph' | 'personal' | null
   const navigate = useNavigate()
 
   async function handleSignIn(hd) {
     setError(null)
-    setLoading(hd)
+    setLoading(hd ?? 'personal')
     try {
       const provider = new GoogleAuthProvider()
-      provider.setCustomParameters({ hd })
+      if (hd) provider.setCustomParameters({ hd })
 
       const result = await signInWithPopup(auth, provider)
       const email = result.user.email
 
-      const isAllowed = ALLOWED_DOMAINS.some((domain) => email.endsWith(domain))
-      if (!isAllowed) {
+      const isInstitutional = ALLOWED_DOMAINS.some((domain) => email.endsWith(domain))
+      if (!isInstitutional && hd) {
         await auth.signOut()
         setError(
           `Only UdD (@udd.edu.ph) or CdD (@cdd.edu.ph) accounts are allowed. You signed in with: ${email}`
@@ -93,7 +93,7 @@ export default function Login() {
             <p className="login-card__event-label">SIKAPTALA 2026</p>
             <h2 className="login-card__title">Sign In to Apply</h2>
             <p className="login-card__subtitle">
-              Use your institutional Google account.
+              Use your institutional Google account to apply.
             </p>
           </div>
 
@@ -123,8 +123,24 @@ export default function Login() {
             </button>
           </div>
 
-          <p className="login-card__note">
-            Only <strong>@udd.edu.ph</strong> and <strong>@cdd.edu.ph</strong> accounts are accepted.
+          <div className="login-card__divider">
+            <span>or</span>
+          </div>
+
+          <div className="login-card__buttons">
+            <button
+              className="btn btn--google btn--google--secondary"
+              onClick={() => handleSignIn(null)}
+              disabled={loading !== null}
+            >
+              <GoogleIcon />
+              {loading === 'personal' ? 'Signing in…' : 'Sign in with personal account'}
+            </button>
+          </div>
+
+          <p className="login-card__note login-card__note--priority">
+            Students with <strong>@udd.edu.ph</strong> or <strong>@cdd.edu.ph</strong> accounts
+            have a <strong>higher chance of being accepted</strong> for the tryouts.
           </p>
         </div>
       </div>
