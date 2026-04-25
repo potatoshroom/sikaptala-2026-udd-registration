@@ -17,9 +17,9 @@ export const COMPETITIONS = [
     registrationOpen: true,
     tryout: {
       sessions: [
-        { date: 'Friday, April 24', time: '10:00 AM – 12:00 PM', venue: 'Room L301' },
+        { date: 'TBA', time: 'TBA', venue: null },
       ],
-      note: 'The tryout will be a face-to-face quiz covering the topics listed below.',
+      note: 'Tryout schedule is to be announced.',
     },
     topics: [
       'Programming Fundamentals',
@@ -48,7 +48,7 @@ export const COMPETITIONS = [
     description: 'Individual programming challenge using Python and Java on HackerRank.',
     type: 'individual',
     slots: null,
-    registrationOpen: true,
+    registrationOpen: false,
     tryout: {
       sessions: [
         { date: 'Friday, April 24', time: '1:00 PM – 5:00 PM', venue: 'Room L301' },
@@ -84,9 +84,9 @@ export const COMPETITIONS = [
     registrationOpen: true,
     tryout: {
       sessions: [
-        { date: 'Friday, April 24', time: '1:00 PM – 5:00 PM', venue: 'Room L302' },
+        { date: 'TBA', time: 'TBA', venue: null },
       ],
-      note: 'Participants will be given a theme on the day of the tryout and must base their design on it. All designs must be created using Figma only.',
+      note: 'Tryout schedule is to be announced.',
     },
     themeNote: 'The official theme will be announced on the day of the competition. All submitted designs must clearly interpret and integrate the assigned theme, applying your own creative approach.',
     topics: [
@@ -150,10 +150,9 @@ export const COMPETITIONS = [
     registrationOpen: true,
     tryout: {
       sessions: [
-        { label: 'Orientation', date: 'Friday, April 24', time: '9:00 AM – 12:00 PM', venue: 'Room L302' },
-        { label: 'Ideathon', date: 'April 24 – 26', time: 'After orientation until April 26, 11:59 PM', venue: null },
+        { date: 'TBA', time: 'TBA', venue: null },
       ],
-      note: 'A theme will be revealed during orientation. Teams will then undergo the Ideathon proper, developing their problem statement and proposed solution, and creating a pitch deck to be submitted by Sunday, April 26.',
+      note: 'Tryout schedule is to be announced.',
     },
     topics: [],
     topicsNote: null,
