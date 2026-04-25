@@ -123,7 +123,7 @@ export const COMPETITIONS = [
     type: 'team',
     teamSize: { min: 3, max: 6 },
     slots: null,
-    registrationOpen: true,
+    registrationOpen: false,
     tryout: {
       sessions: [
         { label: 'Orientation', date: 'Friday, April 24', time: '10:00 AM – 12:00 PM', venue: 'Online' },
