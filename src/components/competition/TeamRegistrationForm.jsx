@@ -160,7 +160,7 @@ function cascadeReset(prev, name, value) {
  */
 export default function TeamRegistrationForm({ competition, onUserLoad }) {
   const navigate = useNavigate()
-  const { id: competitionId, name: competitionName, color } = competition
+  const { id: competitionId, name: competitionName, color, registrationOpen } = competition
   const teamSize = resolveTeamSize(competition.teamSize)
   const teamSizeLabel = formatTeamSize(competition.teamSize)
   const minAdditional = teamSize.min - 1
@@ -423,6 +423,16 @@ export default function TeamRegistrationForm({ competition, onUserLoad }) {
         <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
           Withdraw Registration
         </button>
+      </div>
+    )
+  }
+
+  if (!registrationOpen) {
+    return (
+      <div className="reg-closed">
+        <i className="bi bi-lock-fill reg-closed__icon" />
+        <h3 className="reg-closed__title">Registration Closed</h3>
+        <p className="reg-closed__body">Registration for this competition is no longer open.</p>
       </div>
     )
   }

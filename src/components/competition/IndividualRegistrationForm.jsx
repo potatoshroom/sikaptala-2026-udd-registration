@@ -8,7 +8,7 @@ import { buildFullName, extractFbUsername } from '../../utils/nameUtils'
 
 export default function IndividualRegistrationForm({ competition, onUserLoad }) {
   const navigate = useNavigate()
-  const { id: competitionId, name: competitionName, color } = competition
+  const { id: competitionId, name: competitionName, color, registrationOpen } = competition
 
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -228,6 +228,16 @@ export default function IndividualRegistrationForm({ competition, onUserLoad }) 
         <button type="button" className="btn-withdraw" onClick={handleWithdraw}>
           Withdraw Registration
         </button>
+      </div>
+    )
+  }
+
+  if (!registrationOpen) {
+    return (
+      <div className="reg-closed">
+        <i className="bi bi-lock-fill reg-closed__icon" />
+        <h3 className="reg-closed__title">Registration Closed</h3>
+        <p className="reg-closed__body">Registration for this competition is no longer open.</p>
       </div>
     )
   }

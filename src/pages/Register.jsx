@@ -294,7 +294,7 @@ function CompCard({ comp, route, base }) {
         ) : comp.registrationOpen ? (
           <span className="badge badge--open comp-card__badge">Open</span>
         ) : (
-          <span className="badge badge--soon comp-card__badge">Coming soon</span>
+          <span className="badge badge--closed comp-card__badge">Closed</span>
         )}
       </div>
 
@@ -317,7 +317,11 @@ function CompCard({ comp, route, base }) {
 
       {!comp.adviserNote && (
         <div className="comp-card__action">
-          {route ? (
+          {!comp.registrationOpen ? (
+            <span className="btn btn--register btn--register-disabled">
+              Registration Closed
+            </span>
+          ) : route ? (
             <Link to={route} className="btn btn--register" style={{ background: comp.color }}>
               Register →
             </Link>
