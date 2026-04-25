@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { getCompetition } from '../../data/competitions'
+import { useCompetition } from '../../hooks/useCompetition'
 import CompetitionLayout from '../../components/competition/CompetitionLayout'
 import TopicsList from '../../components/competition/TopicsList'
 import TryoutSchedule from '../../components/competition/TryoutSchedule'
 import IndividualRegistrationForm from '../../components/competition/IndividualRegistrationForm'
 
-const competition = getCompetition('skills')
-
 export default function Skills() {
   const [user, setUser] = useState(null)
+  const { competition } = useCompetition('skills')
 
   return (
     <CompetitionLayout
@@ -16,7 +15,7 @@ export default function Skills() {
       user={user}
       headerChildren={
         <div className="comp-languages comp-languages--banner">
-          {competition.languages.map((lang) => (
+          {(competition.languages ?? []).map((lang) => (
             <span key={lang} className="comp-language-badge" style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#fff' }}>
               {lang}
             </span>
@@ -26,7 +25,7 @@ export default function Skills() {
       infoChildren={
         <>
           <TryoutSchedule competition={competition} />
-<TopicsList
+          <TopicsList
             topics={competition.topics}
             note={competition.topicsNote}
             color={competition.color}

@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { getCompetition } from '../../data/competitions'
+import { useCompetition } from '../../hooks/useCompetition'
 import CompetitionLayout from '../../components/competition/CompetitionLayout'
 import TopicsList from '../../components/competition/TopicsList'
 import TryoutSchedule from '../../components/competition/TryoutSchedule'
 import IndividualRegistrationForm from '../../components/competition/IndividualRegistrationForm'
 
-const competition = getCompetition('web-design')
-
 export default function WebDesign() {
   const [user, setUser] = useState(null)
+  const { competition } = useCompetition('web-design')
 
   return (
     <CompetitionLayout

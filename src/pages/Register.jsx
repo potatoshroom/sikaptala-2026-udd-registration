@@ -3,7 +3,8 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { getDoc, doc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebase'
-import { COMPETITIONS, formatTeamSize } from '../data/competitions'
+import { formatTeamSize } from '../data/competitions'
+import { useCompetitions } from '../hooks/useCompetitions'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -19,6 +20,7 @@ const COMPETITION_ROUTES = {
 
 export default function Register() {
   const navigate = useNavigate()
+  const { competitions: COMPETITIONS } = useCompetitions()
   const [user, setUser] = useState(null)
   const [viewMode, setViewMode] = useState(
     () => window.matchMedia('(max-width: 768px)').matches ? 'grid' : 'carousel'

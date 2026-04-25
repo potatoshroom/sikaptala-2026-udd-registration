@@ -3,14 +3,30 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Path: competitions/{id}
+    // Competition metadata managed by admins. Read by both portals; written only by admins.
+    match /competitions/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Path: admins/{email}
+    // Seeded by the admin seed script. No client-side writes.
+    match /admins/{email} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     // Path: profiles/{uid}
     // Stores a student's locked profile details (name, student ID, year, program, block, FB).
     // Written once on first registration; never updated or deleted from the client.
     match /profiles/{uid} {
       allow read: if request.auth != null
-                  && request.auth.uid == uid;
+                  && request.auth.uid == uid
+                  && isAllowedDomain();
       allow create: if request.auth != null
                     && request.auth.uid == uid
+                    && isAllowedDomain()
                     && request.resource.data.keys().hasAll(
                          ['lastName', 'firstName', 'studentId', 'yearLevel', 'program', 'block', 'facebookLink', 'createdAt'])
                     && request.resource.data.lastName is string && request.resource.data.lastName.size() > 0
@@ -22,30 +38,35 @@ service cloud.firestore {
     // Path: registrations/{competitionId}/entries/{uid}
     // The document ID is the submitter's Firebase UID.
     match /registrations/{competitionId}/entries/{uid} {
-      allow create: if request.auth != null
+      allow create: if isAllowedDomain()
                     && request.auth.uid == uid
                     && isValidEntry(request.resource.data, competitionId)
                     && !isExclusivityViolation(competitionId, uid);
 
-      // Own entry: any authenticated user can read their own.
-      // All entries: institutional accounts only (admin portal).
-      allow read: if (request.auth != null && request.auth.uid == uid)
-                  || isInstitutional();
+      // Allow the submitter to read their own entry (for the "already registered" check).
+      // Allow any authenticated UDD/CDD user to read all entries (admin portal).
+      allow read: if isAllowedDomain();
 
       // Allow the submitter to delete (withdraw) their own registration.
       allow delete: if request.auth != null
-                    && request.auth.uid == uid;
+                    && request.auth.uid == uid
+                    && isAllowedDomain();
 
-      // Allow any institutional UDD/CDD account to update status (and optionally denialReason) only.
-      // Note: no admin role exists yet — any institutional account can technically call this.
-      allow update: if isInstitutional()
+      // Allow any authenticated UDD/CDD user to update status (and optionally denialReason) only.
+      // Note: no admin role exists yet — any UDD/CDD account can technically call this.
+      allow update: if isAllowedDomain()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'denialReason'])
                     && request.resource.data.status in ['pending', 'approved', 'denied'];
     }
 
   }
 
-  function isInstitutional() {
+  function isAdmin() {
+    return request.auth != null
+      && exists(/databases/(default)/documents/admins/$(request.auth.token.email));
+  }
+
+  function isAllowedDomain() {
     return request.auth != null
       && (request.auth.token.email.matches('.*@udd\\.edu\\.ph')
           || request.auth.token.email.matches('.*@cdd\\.edu\\.ph'));
